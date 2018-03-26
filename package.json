@@ -1,5 +1,5 @@
 {
-  "name": "clockwerk",
+  "name": "drow",
   "version": "0.0.1",
   "description": "Command client for ErisJS to create Discord Bots",
   "main": "index.js",
@@ -8,7 +8,7 @@
     "eslint": "./node_modules/.bin/eslint index.js"
   },
   "keywords": [
-    "Clockwerk",
+    "Drow",
     "Eris",
     "Discord",
     "Bot"
