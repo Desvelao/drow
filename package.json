@@ -1,0 +1,28 @@
+{
+  "name": "clockwerk",
+  "version": "0.0.1",
+  "description": "Command client for ErisJS to create Discord Bots",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "eslint": "./node_modules/.bin/eslint index.js"
+  },
+  "keywords": [
+    "Clockwerk",
+    "Eris",
+    "Discord",
+    "Bot"
+  ],
+  "author": "Desvelao^^ <iamdesvelao@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "eris": "^0.8.5",
+    "glob": "^7.1.2",
+    "require-reload": "^0.2.2"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.9.0"
+  }
+}
