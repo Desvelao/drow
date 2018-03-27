@@ -28,6 +28,9 @@ class Command {
 		this.rolesCanUse = options.rolesCanUse || false
 		this.require = options.require || false
 		this.permissions = options.permissions || false
+		this.cooldown = options.cooldown || false
+		this.cooldowns = {}
+		this.cooldownMessage = options.cooldownMessage || 'Not yet'
 		this.subcommandFrom = options.subcommandFrom
 		this.category = options.category || 'Default'
 		this.help = options.help || ''
@@ -61,6 +64,13 @@ class Command {
    */
 	get names () {
 		return [this.name, ...this.aliases]
+	}
+
+	inCooldown(id){
+		const now = Math.round(new Date().getTime()/1000)
+		const inCD = this.cooldowns[id] + this.cooldown - now
+		if(inCD > 0){return inCD}
+		else{this.cooldowns[id] = now}
 	}
 }
 

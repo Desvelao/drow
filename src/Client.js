@@ -165,6 +165,10 @@ class Client extends Eris.Client {
 		if(command.require && !command.require.call(this, msg, args, command)) return
 		if(command.rolesCanUse && !this.checkRolesCanUse(msg,command.rolesCanUse)) return
 		if(command.permissions && !this.checkHasPermissions(msg,command.permissions)) return
+		if(command.cooldown){
+			const inCooldown = command.inCooldown(msg.author.id)
+			if(inCooldown > 0) return msg.reply(command.cooldownMessage)
+		}
 		// console.log('THIS',this);
 		command.process.call(this, msg, args, command)
 		// u.info('did a thing:', commandName, args.join(' '))
