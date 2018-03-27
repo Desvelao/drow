@@ -27,6 +27,7 @@ class Command {
 		this.ownerOnly = options.ownerOnly || false
 		this.rolesCanUse = options.rolesCanUse || false
 		this.require = options.require || false
+		this.permissions = options.permissions || false
 		this.subcommandFrom = options.subcommandFrom
 		this.category = options.category || 'Default'
 		this.help = options.help || ''

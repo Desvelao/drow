@@ -1,4 +1,4 @@
-const { Client, Command, Watcher } = require('./src/Drow');
+const { Client, Command, Watcher } = require('./src/Aghanim');
 
 module.exports = Client;
 module.exports.Client = Client;

@@ -1,1 +1,1 @@
-Drow is a command client for create bot with [eris](https://github.com/abalabahaha/eris) based on [yuuko](https://github.com/Geo1088/yuuko) using JavaScript
+**Aghanim** is a commands client for create bots with [Eris](https://github.com/abalabahaha/eris) in JavaScript based on [Yuuko](https://github.com/Geo1088/yuuko)

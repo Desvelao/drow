@@ -164,6 +164,7 @@ class Client extends Eris.Client {
 		if(command.ownerOnly && msg.author.id !== this.owner.id) return
 		if(command.require && !command.require.call(this, msg, args, command)) return
 		if(command.rolesCanUse && !this.checkRolesCanUse(msg,command.rolesCanUse)) return
+		if(command.permissions && !this.checkHasPermissions(msg,command.permissions)) return
 		// console.log('THIS',this);
 		command.process.call(this, msg, args, command)
 		// u.info('did a thing:', commandName, args.join(' '))
@@ -349,9 +350,9 @@ class Client extends Eris.Client {
 		if(!Array.isArray(categories)){
 			categories = [categories]
 		}
-		console.log('CAT',categories);
+		// console.log('CAT',categories);
 		const cmds = this.commands.filter( c => categories.includes(c.category.toLowerCase()))
-		console.log(cmds);
+		// console.log(cmds);
 		if(cmds.length < 1){return};
 		function sortCmdsFromCat(a,b){
 	    a = a.name.toLowerCase();b = b.name.toLowerCase();
@@ -371,7 +372,7 @@ class Client extends Eris.Client {
 	    }
 	  }
 		const concat = (sep,...things) => things.join(sep || '')
-		console.log('CON');
+		// console.log('CON');
 		const capitalize = (text) => text[0].toUpperCase() + text.slice(1)
 		const text = concat(this.user.username + ' - Help',categories.map(cat => {
 	    return `**${capitalize(cat)}**\n\n${cmds.filter(c => {console.log(c.name,c.category);return cat === c.category.toLowerCase() && !c.hide}).sort(sortCmdsFromCat).map(c => `\`${this.defaultPrefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${showSubcommands(c)}`).join('\n')}`
@@ -389,6 +390,13 @@ class Client extends Eris.Client {
 		return roles.find( r => {
 			return rolesName.includes(msg.channel.guild.roles.get(r).name.toLowerCase())
 		})
+	}
+
+	checkHasPermissions(msg,permissions){
+		if(msg.channel.type !== 0) return
+		const member = msg.channel.guild.members.get(msg.author.id)
+		if(!member) return
+		return !Object.keys(permissions).map(p => ({name : p, enable : permissions[p]})).some(p => member.permission.json[p.name] !== p.enable)
 	}
 
 	addWatcher(event,watcher){

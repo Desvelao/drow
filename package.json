@@ -1,5 +1,5 @@
 {
-  "name": "drow",
+  "name": "aghanim",
   "version": "0.0.1",
   "description": "Command client for ErisJS to create Discord Bots",
   "main": "index.js",
