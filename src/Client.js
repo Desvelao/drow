@@ -58,7 +58,9 @@ class Client extends Eris.Client {
 		 *     respond to.
 		 */
 		this.commands = []
-		this.watchers = {messageCreate : []}
+		this.watchers = {}
+		const _events_watcher = ['messageCreate','messageReactionAdd','messageReactionRemove','guildCreate','guildDelete','guildMemberAdd','guildMemberRemove']
+	  _events_watcher.forEach(event => this.watchers[event] = [])
 
 		if(options.extensions){
 			const plugins = Object.keys(options.extensions).map(ext => ({ext : ext, enable : options.extensions[ext]}))
@@ -98,6 +100,12 @@ class Client extends Eris.Client {
 			console.log(err);
 			// u.error('Error in client:\n', err)
 		}).on('messageCreate', this.handleMessage)
+		.on('messageReactionAdd',this.handleWatcherReactionAdd)
+	  .on('messageReactionRemove',this.handleWatcherReactionRemove)
+	  .on('guildCreate',this.handleWatcherGuildCreate)
+	  .on('guildDelete',this.handleWatcherGuildDelete)
+	  .on('guildMemberAdd',this.handleWatcherMemberAdd)
+	  .on('guildMemberRemove',this.handleWatcherMemberRemove)
 
 		this.setup.helpMessage = (options.helpMessage || '**Help**') + '\n\n'
 		this.setup.helpMessageAferCategories = (options.helpMessageAferCategories || `**Note**: Use \`${this.defaultPrefix}help <category>\` to see those commands`) + '\n\n'
@@ -172,6 +180,30 @@ class Client extends Eris.Client {
 		// console.log('THIS',this);
 		command.process.call(this, msg, args, command)
 		// u.info('did a thing:', commandName, args.join(' '))
+	}
+
+	handleWatcherReactionAdd = function(msg,emoji,userID){
+		this.watchers.messageReactionAdd.forEach(watcher => watcher.process.call(this,msg,emoji,userID))
+	}
+
+	handleWatcherReactionRemove = function(msg,emoji,userID){
+		this.watchers.messageReactionRemove.forEach(watcher => watcher.process.call(this,msg,emoji,userID))
+	}
+
+	handleWatcherGuildCreate = function(guild){
+		this.watchers.guidlCreate.forEach(watcher => watcher.process.call(this,guild))
+	}
+
+	handleWatcherGuildDelete = function(guild){
+		this.watchers.guildDelete.forEach(watcher => watcher.process.call(this,guild))
+	}
+
+	handleWatcherMemberAdd = function(guild,member){
+		this.watchers.guildMemberAdd.forEach(watcher => watcher.process.call(this,guild,member))
+	}
+
+	handleWatcherMemberRemove = function(guild,member){
+		this.watchers.guildMemberRemove.forEach(watcher => watcher.process.call(guild,member))
 	}
 
 	/**
@@ -285,7 +317,7 @@ class Client extends Eris.Client {
 	 */
 	commandForName (command,subcommand) {
 		// console.log('SEARCHING',command,subcommand);
-		const commandFind = this.commands.find(c => {console.log([c.name, ...c.aliases]);return [c.name, ...c.aliases].includes(command)})
+		const commandFind = this.commands.find(c => {return [c.name, ...c.aliases].includes(command)})
 		// console.log(commandFind);
 		if(!commandFind) return
 		if(subcommand){
@@ -379,7 +411,7 @@ class Client extends Eris.Client {
 		// console.log('CON');
 		const capitalize = (text) => text[0].toUpperCase() + text.slice(1)
 		const text = concat(this.user.username + ' - Help',categories.map(cat => {
-	    return `**${capitalize(cat)}**\n\n${cmds.filter(c => {console.log(c.name,c.category);return cat === c.category.toLowerCase() && !c.hide}).sort(sortCmdsFromCat).map(c => `\`${this.defaultPrefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${showSubcommands(c)}`).join('\n')}`
+	    return `**${capitalize(cat)}**\n\n${cmds.filter(c => {return cat === c.category.toLowerCase() && !c.hide}).sort(sortCmdsFromCat).map(c => `\`${this.defaultPrefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${showSubcommands(c)}`).join('\n')}`
 	  }).join('\n\n'))
 		return text
 	}
