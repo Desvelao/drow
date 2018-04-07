@@ -182,27 +182,27 @@ class Client extends Eris.Client {
 		// u.info('did a thing:', commandName, args.join(' '))
 	}
 
-	handleWatcherReactionAdd = function(msg,emoji,userID){
+	handleWatcherReactionAdd(msg,emoji,userID){
 		this.watchers.messageReactionAdd.forEach(watcher => watcher.process.call(this,msg,emoji,userID))
 	}
 
-	handleWatcherReactionRemove = function(msg,emoji,userID){
+	handleWatcherReactionRemove(msg,emoji,userID){
 		this.watchers.messageReactionRemove.forEach(watcher => watcher.process.call(this,msg,emoji,userID))
 	}
 
-	handleWatcherGuildCreate = function(guild){
+	handleWatcherGuildCreate(guild){
 		this.watchers.guidlCreate.forEach(watcher => watcher.process.call(this,guild))
 	}
 
-	handleWatcherGuildDelete = function(guild){
+	handleWatcherGuildDelete(guild){
 		this.watchers.guildDelete.forEach(watcher => watcher.process.call(this,guild))
 	}
 
-	handleWatcherMemberAdd = function(guild,member){
+	handleWatcherMemberAdd(guild,member){
 		this.watchers.guildMemberAdd.forEach(watcher => watcher.process.call(this,guild,member))
 	}
 
-	handleWatcherMemberRemove = function(guild,member){
+	handleWatcherMemberRemove(guild,member){
 		this.watchers.guildMemberRemove.forEach(watcher => watcher.process.call(guild,member))
 	}
 
