@@ -26,7 +26,7 @@ class Command {
 		this.userOnly = typeof(options.userOnly) === 'string' ? [options.userOnly] : (Array.isArray(options.userOnly)) ? options.userOnly : false
 		this.ownerOnly = options.ownerOnly || false
 		this.rolesCanUse = options.rolesCanUse || false
-		this.require = options.require || false
+		this.check = options.check || false
 		this.permissions = options.permissions || false
 		this.cooldown = options.cooldown || false
 		this.cooldowns = {}

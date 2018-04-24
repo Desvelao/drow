@@ -25,8 +25,8 @@ class Client extends Eris.Client {
 	 * @param {number} options.logLevel - The minimum message level for logged
 	 *     events in the console.
 	 */
-	constructor (options = {}) {
-		super(options.token, options)
+	constructor (token,options = {}) {
+		super(token, options)
 
 		// u = LoggerThing(options.logLevel == null ? 2 : options.logLevel)
 
@@ -170,7 +170,7 @@ class Client extends Eris.Client {
 		if(command.dmOnly && msg.channel.type === 0) return
 		if(command.userOnly && command.userOnly.includes(msg.author.id)) return
 		if(command.ownerOnly && msg.author.id !== this.owner.id) return
-		if(command.require && !command.require.call(this, msg, args, command)) return
+		if(command.check && !command.check.call(this, msg, args, command)) return
 		if(command.rolesCanUse && !this.checkRolesCanUse(msg,command.rolesCanUse)) return
 		if(command.permissions && !this.checkHasPermissions(msg,command.permissions)) return
 		if(command.cooldown){
