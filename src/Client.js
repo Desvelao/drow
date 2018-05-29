@@ -108,7 +108,7 @@ class Client extends Eris.Client {
 	  .on('guildMemberRemove',this.handleWatcherMemberRemove)
 
 		this.setup.helpMessage = (options.helpMessage || '**Help**') + '\n\n'
-		this.setup.helpMessageAferCategories = (options.helpMessageAferCategories || `**Note**: Use \`${this.defaultPrefix}help <category>\` to see those commands`) + '\n\n'
+		this.setup.helpMessageAfterCategories = (options.helpMessageAfterCategories || `**Note**: Use \`${this.defaultPrefix}help <category>\` to see those commands`) + '\n\n'
 		this.setup.helpDM = options.helpDM || false
 		if(!options.helpEnable){
 			this.addCommand(new Command('help',{},(msg, args, prefix, command) => {
@@ -123,7 +123,7 @@ class Client extends Eris.Client {
 						msg.author.getDMChannel().then(channel => channel.createMessage(helpMessage))
 					}
 				}else{
-					const helpMessage = this.setup.helpMessage + this.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${this.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + this.setup.helpMessageAferCategories
+					const helpMessage = this.setup.helpMessage + this.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${this.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + this.setup.helpMessageAfterCategories
 					if(!this.setup.helpDM){
 						msg.reply(helpMessage)
 					}else{
