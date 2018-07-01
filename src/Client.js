@@ -167,18 +167,22 @@ class Client extends Eris.Client {
 		if (!command) return
 		if(!command.enable) return
 		if(command.guildOnly && msg.channel.type !== 0) return
-		if(command.dmOnly && msg.channel.type === 0) return
-		if(command.userOnly && command.userOnly.includes(msg.author.id)) return
+		if(command.dmOnly && msg.channel.type !== 1) return
+		if(command.userOnly && !command.userOnly.includes(msg.author.id)) return
 		if(command.ownerOnly && msg.author.id !== this.owner.id) return
 		if(command.check && !command.check.call(this, msg, args, command)) return
 		if(command.rolesCanUse && !this.checkRolesCanUse(msg,command.rolesCanUse)) return
 		if(command.permissions && !this.checkHasPermissions(msg,command.permissions)) return
-		if(command.cooldown){
-			const inCooldown = command.inCooldown(msg.author.id)
-			if(inCooldown > 0) return msg.reply(command.cooldownMessage)
+		if(command.cooldown){ //TODO: Revise
+			// const inCooldown = command.inCooldown(msg.author.id)
+			// if(inCooldown > 0) return msg.reply(command.cooldownMessage)
+			const cd = command.getCooldown(msg.author.id)
+			if(cd > 0){return msg.reply(command.cooldownMessage)}
 		}
 		// console.log('THIS',this);
 		command.process.call(this, msg, args, command)
+
+		if(command.cooldown && command.autoCooldown){command.setCooldown(msg.author.id)}
 		// u.info('did a thing:', commandName, args.join(' '))
 	}
 
