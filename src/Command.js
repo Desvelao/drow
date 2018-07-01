@@ -68,11 +68,11 @@ class Command {
 	}
 
 	getCooldown(id){
-		return this.cooldowns[id] + this.cooldown - Math.round(new Date().getTime()/1000)
+		return this.cooldowns[id] - Math.round(new Date().getTime()/1000)
 	}
 
 	setCooldown(id,cd){
-		this.cooldowns[id] = cd ? cd : Math.round(new Date().getTime()/1000) + this.cooldown
+		this.cooldowns[id] = cd !== undefined ? cd : Math.round(new Date().getTime()/1000) + this.cooldown
 	}
 }
 

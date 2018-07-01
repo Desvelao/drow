@@ -173,11 +173,9 @@ class Client extends Eris.Client {
 		if(command.check && !command.check.call(this, msg, args, command)) return
 		if(command.rolesCanUse && !this.checkRolesCanUse(msg,command.rolesCanUse)) return
 		if(command.permissions && !this.checkHasPermissions(msg,command.permissions)) return
-		if(command.cooldown){ //TODO: Revise
-			// const inCooldown = command.inCooldown(msg.author.id)
-			// if(inCooldown > 0) return msg.reply(command.cooldownMessage)
+		if(command.cooldown){
 			const cd = command.getCooldown(msg.author.id)
-			if(cd > 0){return msg.reply(command.cooldownMessage)}
+			if(cd > 0){return msg.reply(command.cooldownMessage.replace(new RegExp('<cd>', 'g'),cd).replace(new RegExp('<username>', 'g'),msg.author.username))}
 		}
 		// console.log('THIS',this);
 		command.process.call(this, msg, args, command)
