@@ -23,13 +23,14 @@ let u;
 class Client extends Eris.Client {
 	/**
 	 * Create a client instance.
+	 * @param {string} token - The token used to log into the bot.
 	 * @param {Object} options - Options to start the client with. This object is
 	 *     also passed to Eris.
-	 * @param {string} options.token - The token used to log into the bot.
 	 * @param {string} options.prefix - The prefix the bot will respond to in
 	 *     guilds for which there is no other confguration. (Currently everywhere)
 	 * @param {boolean} options.allowMention - Whether or not the bot can respond
 	 *     to messages starting with a mention of the bot.
+	 * @param {boolean} options.ignoreBots - Whether or not the bot ignoresBots. Default: true
 	 * @param {number} options.logLevel - The minimum message level for logged
 	 *     events in the console.
 	 */
@@ -47,13 +48,14 @@ class Client extends Eris.Client {
 		this.setup = {}
 		if (this.defaultPrefix === '') {
 			// u.warn('defaultPrefix is an empty string, bot will not require a prefix to run commands')
+			throw new Error('Prefix has not defined!')
 		}
 
 		/**
 		 * @prop {boolean} - Whether or not the bot can respond to messages starting
 		 *     with a mention of the bot. Defaults to true.
 		 */
-		this.allowMention = options.allowMention == null ? false : options.allowMention
+		this.allowMention = options.allowMention === null ? false : options.allowMention
 
 		/**
 		 * @prop {boolean} - Whether or not the bot ignores messages sent from bot
@@ -66,10 +68,15 @@ class Client extends Eris.Client {
 		 *     respond to.
 		 */
 		this.commands = []
+
+		/**
+		 * @prop {Object<Arrays <Watchers>>}
+		 */
 		this.watchers = {}
 		const _events_watcher = ['messageCreate','messageReactionAdd','messageReactionRemove','guildCreate','guildDelete','guildMemberAdd','guildMemberRemove']
 	  _events_watcher.forEach(event => this.watchers[event] = [])
 
+		//TODO
 		if(options.extensions){
 			const plugins = Object.keys(options.extensions).map(ext => ({ext : ext, enable : options.extensions[ext]}))
 			plugins.forEach(ext => {
@@ -83,6 +90,7 @@ class Client extends Eris.Client {
 				}
 			})
 		}
+
 		this.on('ready', () => {
 			/**
 			 * @prop {RegExp} - The RegExp used to tell whether or not a message starts
@@ -98,6 +106,10 @@ class Client extends Eris.Client {
 				this.app = app
 				this.owner = Object.assign({},this.app.owner)
 				this.getDMChannel(this.owner.id).then(channel => {
+					/**
+					 * Function to send messages to owner
+					 * @param  {[type]} content [description]
+					 */
 					this.owner.send = function(content){channel.createMessage(content)}
 				})
 				this.emit('postready')
@@ -122,7 +134,6 @@ class Client extends Eris.Client {
 			this.addCommand(new Command('help',{},(msg, args, prefix, command) => {
 				const categories = this.categories.map(c => c.name.toLowerCase())
 				const query = args.from(1).toLowerCase();
-				// console.log('CATEGORIES',categories,query,query.length,categories.includes(query));
 				if(categories.includes(query)){
 					const helpMessage = this.getCommandsFromCategories(query)
 					if(!this.setup.helpDM){
@@ -162,16 +173,15 @@ class Client extends Eris.Client {
 		// }
 		let args = content.split(' ')
 		const commandName = args[0] //.splice(0, 1)
-		// console.log('ARGS',args,commandName);
 		const subCommandName = args[1]
+
 		args.prefix = prefix
 		args.content = content
 		args.from = (arg) => msg.content.replace(this.defaultPrefix + args.slice(0,arg).join(' ') + ' ','')
 		args.until = (arg) => this.defaultPrefix + args.slice(0,arg).join(' ')
 		args.after = args.from(1)
-		// console.log('AFTER',args.after);
+
 		let command = this.commandForName(commandName,subCommandName)
-		// console.log('CMD',command);
 		if (!command) return
 		if(!command.enable) return
 		if(command.guildOnly && msg.channel.type !== 0) return
@@ -186,9 +196,23 @@ class Client extends Eris.Client {
 			if(cd > 0){return msg.reply(command.cooldownMessage.replace(new RegExp('<cd>', 'g'),cd).replace(new RegExp('<username>', 'g'),msg.author.username))}
 		}
 		// console.log('THIS',this);
-		command.process.call(this, msg, args, command)
+		// command.process.call(this, msg, args, command)
+		if(command.cooldown || command.await){
+			let promise = Promise.resolve(command.process.call(this, msg, args, command))
+			// console.log('isPromise',promise);
+			promise.then((val) => {
+				// console.log('Val Promise',val);
+				if(command.cooldown){
+					command.setCooldown(msg.author.id)
+					// msg.reply('CD established')
+				}
+				this.handleCommandAwaitSuccess(command,val)
+			}).catch(err => this.handleCommandAwaitFail(command,err))
+		}else{
+			command.process.call(this, msg, args, command)
+		}
 
-		if(command.cooldown && command.autoCooldown){command.setCooldown(msg.author.id)}
+		// if(command.cooldown && command.autoCooldown){command.setCooldown(msg.author.id)}
 		// u.info('did a thing:', commandName, args.join(' '))
 	}
 
@@ -216,6 +240,13 @@ class Client extends Eris.Client {
 		this.watchers.guildMemberRemove.forEach(watcher => watcher.process.call(guild,member))
 	}
 
+	handleCommandAwaitSuccess(command,val){
+		if(val === undefined){console.log(`Warning: ${command.name} returned a promise with undefined value`)}
+	}
+
+	handleCommandAwaitFail(command,err){
+		console.log(`Warning: ${command.name} returned a fail promise\n${err}`);
+	}
 	/**
 	 * Register a command to the client.
 	 * @param {Command} command - The command to add to the bot.
@@ -227,11 +258,11 @@ class Client extends Eris.Client {
 		const level = this.levelIsCommand(cmd,scmd)
 		if(!level){
 			this.commands.push(command)
-			console.log('Added Command',command.name);
+			// console.log('Added Command',command.name);
 		}else if(level !== 2){
 			level.subcommands.push(command)
 			command.upcommand = level
-			console.log('Added SubCommand',command.name, 'from', command.subcommandFrom);
+			// console.log('Added SubCommand',command.name, 'from', command.subcommandFrom);
 		}
 		// if (this.commandForName(command.name) && !command.subcommandFrom) return console.log('Duplicate Command');// u.warn(`Duplicate command found (${command.name})`)
 		// if (this.commandForName(command.name,command.subcommandFrom)) return console.log('Duplicate Command');
@@ -451,8 +482,8 @@ class Client extends Eris.Client {
 		const events = Object.keys(this.watchers)
 		if(!events.includes(event)){return console.log('ERROR adding event',event)}
 		this.watchers[event].push(watcher)
-		console.log('Added Watcher',watcher.name);
-		console.log(this.watchers[event]);
+		// console.log('Added Watcher',watcher.name);
+		// console.log(this.watchers[event]);
 	}
 
 	addWatcherFile(filename){

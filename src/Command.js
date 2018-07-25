@@ -30,14 +30,14 @@ class Command {
 		this.permissions = options.permissions || false
 		this.cooldown = options.cooldown || false
 		this.cooldowns = {}
-		this.cooldownMessage = options.cooldownMessage || 'Not yet'
-		this.autoCooldown = options.autoCooldown !== undefined ? options.autoCooldown : true
+		this.cooldownMessage = options.cooldownMessage || 'Not yet! Ready in **<cd>**s'
 		this.subcommandFrom = options.subcommandFrom
 		this.category = options.category || 'Default'
 		this.help = options.help || ''
 		this.args = options.args || ''
-		this.hide = options.hide !== undefined ? options.hide : false
-		this.enable = options.enable !== undefined ?optiosn.enable : true
+		this.hide = options.hide !== undefined ? options.hide : false //Hide command from help command
+		this.enable = options.enable !== undefined ? options.enable : true //Enable or disable command
+		this.await = options.await !== undefined ? options.await : false //Await result comand and warning if return is undefined
 	}
 
 	/**
@@ -74,6 +74,9 @@ class Command {
 	setCooldown(id,cd){
 		this.cooldowns[id] = cd !== undefined ? cd : Math.round(new Date().getTime()/1000) + this.cooldown
 	}
+
+	static awaitReject(){return Promise.reject()} //Evade setCooldown
+	error(){throw new Error(`Error: ${this.name} failed!`)}
 }
 
 module.exports = Command

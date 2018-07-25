@@ -1,4 +1,4 @@
-**Aghanim** is a Command client for create bots with [Eris](https://github.com/abalabahaha/eris) in JavaScript based on [Yuuko](https://geo1088.github.io/yuuko)
+**Aghanim** is a Command Client for create bots with [Eris](https://github.com/abalabahaha/eris) in JavaScript based on [Yuuko](https://geo1088.github.io/yuuko)
 
 ## Using the bot
 
@@ -32,7 +32,7 @@ bot.defineCategories([
 ])
 
 const pingCommand = new Command('ping', {
-  category : 'Fun', help : 'Emojis animados de Dota 2', args : '<emoji>'},
+  category : 'Fun', help : 'Get Pong!', args : ''},
   function (msg,args,cmd) {
   	msg.channel.createMessage('Pong!')
 })
@@ -43,7 +43,7 @@ bot.addCommand(pingCommand)
 const simpleWatcher = new Watcher(
   'my_watcher', // Watcher's name
   'messageCreate', // Watcher's event (same ErisJS)
-  function(msg,args,cmd){
+  function(msg,args,command){
 	   if(msg.channel.type === 0){console.log('Message received in a guild!')
 	})
 
