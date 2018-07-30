@@ -1,21 +1,10 @@
-# Aghanim
+## Aghanim
 
-**Aghanim** is a Command Client for create ***Discord*** bots with [Eris](https://github.com/abalabahaha/eris) in NodeJS based on [Yuuko](https://geo1088.github.io/yuuko)
+**Aghanim** is a Command Client created by [Desvelao^^](https://desvelao.github.io/profile/) for create bots with [Eris](https://github.com/abalabahaha/eris) in NodeJS based on [Yuuko](https://geo1088.github.io/yuuko)
 
-__Author__ : [Desvelao^^](https://desvelao.github.io/profile/)  __Version__: `v0.0.1`
+**Version**: `v0.0.1`
 
-## Features
-- Support for Subcommands (Command should be exists)
-- Commands with user cooldown
-- Load commands, events and extensions from directories or files directly.
-- Can extends Eris or your bot client with Extensions
-- Can add custom functionality to some Eris events. You always can listen the event.
-
-## Using the bot
-
-Usage information for the bot (the usable commands, default configuration, and other help topics) can be found in the wiki [here](https://github.io/Desvelao/aghanim/wiki).
-
-## Using the package
+### Using the package
 
 **Aghanim's core** is only available at [Github repository](https://github.com/Desvelao/aghanim). It extends [Eris](https://github.com/abalabahaha/eris) and is basically an alternative to its CommandClient class.
 
@@ -26,11 +15,20 @@ $ yarn add Desvelao/aghanim#dev # yarn
 $ npm install --save Desvelao/aghanim#dev # npm
 ```
 
-### Usage
+### Steps
+1. [Create](./create-bot.html) a bot instance
+2. *(optional)* Load [Custom Extensions](./custom-extensions.html)
+3. *(optional)* Set custom events to Eris events
+3. Define your Categories
+4. Add Commands.
+5. *(optional)* Add subcommands
+6. Connect bot
+
+### Fast Example
 
 ```js
 //index.js
-const Aghanim  = require('aghanim')
+const Aghanim = require('aghanim')
 const { Command, Event }  = require('aghanim')
 
 const bot = new Aghanim(
@@ -57,7 +55,7 @@ const simpleEvent = new Event(
   'messageCreate', // Event's event (same ErisJS)
   function(msg,args,command){
 		//this = Aghanim.Client
-	  if(msg.channel.type === 0){console.log('Message received from a guild!')}
+	  if(msg.channel.type === 0){console.log('Message received in a guild!')}
 	})
 
 bot.addEvent(simpleEvent)

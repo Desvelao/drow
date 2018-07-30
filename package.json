@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "eslint": "./node_modules/.bin/eslint index.js"
+    "eslint": "./node_modules/.bin/eslint index.js",
+    "docs": "jsdoc src -d docs --readme ./readme.md -c ./conf.json -u ./docs/tutorials"
   },
   "keywords": [
     "Aghanim",
@@ -16,6 +17,7 @@
   "author": "Desvelao^^ <iamdesvelao@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "another-logger": "^2.0.0-pre2",
     "eris": "^0.8.6",
     "glob": "^7.1.2",
     "require-reload": "^0.2.2"
@@ -23,6 +25,7 @@
   "devDependencies": {
     "eslint": "^4.19.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.9.0"
+    "eslint-plugin-import": "^2.9.0",
+    "jsdoc": "^3.5.5"
   }
 }
