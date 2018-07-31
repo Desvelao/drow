@@ -68,6 +68,8 @@ class Command {
 		/** @prop {Command~process} - Process of command*/
 		this.process = process
 		if (!this.process) throw new TypeError('Process is required')
+		/** @prop {string} - Description of command*/
+		this.help = options.help || ''
 		/** @prop {Command[]} - Subcommands of Command.*/
 		this.subcommands = []
 		/** @prop {Command} - Upper Command*/
