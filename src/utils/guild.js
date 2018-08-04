@@ -1,5 +1,5 @@
 module.exports.getDefaultChannel = function(guild,bot,canWrite){
-  return guild.channels.map(channel => channel).reduce((defaultChannel,channel) => {
+  return guild.channels.filter(channel => channel.type === 0).reduce((defaultChannel,channel) => {
     if(channel.type === 0 && channel.permissionsOf(bot.user.id).has("readMessages") && (!defaultChannel || channel.position < defaultChannel.position)){
       if(!canWrite){
         return channel
