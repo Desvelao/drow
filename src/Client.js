@@ -260,7 +260,7 @@ class Client extends Eris.Client {
 	 * @param  {Eris.Guild} guild - Guild that bot joined
 	 */
 	handleGuildCreate(guild){
-		this.events.guidlCreate.forEach(event => event.process.call(this,guild))
+		this.events.guildCreate.forEach(event => event.process.call(this,guild))
 	}
 
 	/***
