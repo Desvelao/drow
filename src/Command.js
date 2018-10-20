@@ -139,7 +139,10 @@ class Command {
 	static awaitReject(){return Promise.reject()} //Evade setCooldown
 
 	/** Throw a command error*/
-	error(){throw new Error(`Error: ${this.name} failed!`)}
+	error(message){
+		return Promise.reject(`<${this.name}> error: ${message}`)
+		// throw new Error(`Error: ${this.name} failed!`)
+	}
 
 }
 

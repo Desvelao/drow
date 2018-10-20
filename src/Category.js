@@ -15,6 +15,11 @@ class Category {
 		options = options || {}
 		this.hide = options.hide || false
 		this.restrict = options.restrict || function(){return false}
+		for (var opt in options) {
+			if (!this.hasOwnProperty(opt)) {
+				this[opt] = options[opt]
+			}
+		}
 	}
 }
 
