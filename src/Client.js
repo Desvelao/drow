@@ -237,7 +237,7 @@ class Client extends Eris.Client {
 		}
 
 		Promise.resolve(command.process.call(this,msg,args,command)).then((val) => {
-			logger.log('Val Promise',val);
+			// logger.log('Val Promise',val);
 			if(command.cooldown){
 				command.setCooldown(msg.author.id)
 			}
