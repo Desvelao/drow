@@ -43,7 +43,7 @@ class Client extends Eris.Client {
 		options.disableHelp = options.disableHelp || false
 		logger = new Logger({
 			label : 'Aghanim',
-		  timestamp : true,
+		  timestamps : true,
 		  levels : {
 		    dev : {style : 'magenta'}
 		  },
