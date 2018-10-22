@@ -41,7 +41,8 @@ class Client extends Eris.Client {
 		// u = LoggerThing(options.logLevel == null ? 2 : options.logLevel)
 		options.devLogs = options.devLogs || false
 		options.disableHelp = options.disableHelp || false
-		logger = new Logger('Aghanim',{
+		logger = new Logger({
+			label : 'Aghanim',
 		  timestamp : true,
 		  levels : {
 		    dev : {style : 'magenta'}
