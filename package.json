@@ -17,8 +17,8 @@
   "author": "Desvelao^^ <iamdesvelao@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "another-logger": "^2.0.0-pre2",
-    "eris": "^0.8.6",
+    "another-logger": "^2.0.0",
+    "eris": "^0.9.0",
     "glob": "^7.1.2",
     "require-reload": "^0.2.2"
   },
