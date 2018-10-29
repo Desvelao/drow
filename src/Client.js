@@ -6,12 +6,12 @@ const Category = require('./Category');
 const Extension = require('./Extension');
 const Event = require('./Event'), { eventNames } = require('./Event');
 const reload = require('require-reload')(require);
-// const extensions = require('./extensions')
+
 const utilsSort = require('./utils/sort')
 
 const DEFAULT_CATEGORY = 'Default'
 
-//TODO: add logger in mode dev show logs
+//Logger
 let logger
 /**
  * Aghanim Client extends from Eris.Client
@@ -38,7 +38,6 @@ class Client extends Eris.Client {
 	constructor (token,options = {}) {
 		super(token, options)
 
-		// u = LoggerThing(options.logLevel == null ? 2 : options.logLevel)
 		options.devLogs = options.devLogs || false
 		options.disableHelp = options.disableHelp || false
 		logger = new Logger({
@@ -49,6 +48,7 @@ class Client extends Eris.Client {
 		  },
 			ignoredLevels: [options.devLogs ? '' : 'dev']
 		})
+		
 		/** @prop {string} - The prefix the bot will respond to in guilds for which there is no other confguration.*/
 		this.defaultPrefix = options.prefix
 		/**@prop {Command[]} - An array of commands the bot will respond to.*/
@@ -60,7 +60,6 @@ class Client extends Eris.Client {
 		/**@prop {Object} - Setup*/
 		this.setup = {}
 		if (this.defaultPrefix === '') {
-			// u.warn('defaultPrefix is an empty string, bot will not require a prefix to run commands')
 			throw new Error('Prefix has not defined!')
 		}
 		/** @prop {boolean} - Whether or not the bot can respond to messages starting with a mention of the bot. Defaults to true.*/
@@ -124,21 +123,20 @@ class Client extends Eris.Client {
 					 */
 					this.owner.send = function(content,file){channel.createMessage(content,file)}
 				})
-				this.handleReady()
+				this._handleEvent('ready')()
 			})
-
-			// u.ok('Logged in as', u.underline(`@${this.user.username}#${this.user.discriminator}`), `- in ${this.guilds.size} guild${this.guilds.size === 1 ? '' : 's'}, ${this.commands.length} command${this.commands.length === 1 ? '' : 's'} loaded`)
+			
 		}).on('error', err => {
 			logger.error(err)
 			// console.log(err);
 			// u.error('Error in client:\n', err)
 		}).on('messageCreate', this.handleMessage)
-		.on('messageReactionAdd',this.handleReactionAdd)
-	  .on('messageReactionRemove',this.handleReactionRemove)
-	  .on('guildCreate',this.handleGuildCreate)
-	  .on('guildDelete',this.handleGuildDelete)
-	  .on('guildMemberAdd',this.handleMemberAdd)
-	  .on('guildMemberRemove',this.handleMemberRemove)
+			.on('messageReactionAdd', this._handleEvent('messageReactionAdd'))
+			.on('messageReactionRemove', this._handleEvent('messageReactionRemove'))
+			.on('guildCreate', this._handleEvent('guildCreate'))
+			.on('guildDelete', this._handleEvent('guildDelete'))
+			.on('guildMemberAdd', this._handleEvent('guildMemberAdd'))
+			.on('guildMemberRemove', this._handleEvent('guildMemberRemove'))
 
 		this.setup.helpMessage = (options.helpMessage || '**Help**') + '\n\n'
 		this.setup.helpMessageAfterCategories = (options.helpMessageAfterCategories || `**Note**: Use \`${this.defaultPrefix}help <category>\` to see those commands`) + '\n\n'
@@ -175,14 +173,7 @@ class Client extends Eris.Client {
 	 * @param {Object} msg - The message object recieved from Eris.
 	 */
 	handleMessage (msg) {
-		this.events.messageCreate.forEach((event,i) => {
-			try{
-				event.process.call(this,msg)
-			}catch(err){
-				logger.error(`${event.name} got an error. => ${err}`);
-				this.emit('errorAghanimEvent',event,err,msg)
-			}
-		})
+		this._handleEvent('messageCreate')(msg)
 
 		if (this.ignoreBots && msg.author.bot) return
 
@@ -243,93 +234,39 @@ class Client extends Eris.Client {
 				command.setCooldown(msg.author.id)
 			}
 			if(command.cooldown || command.await){
-				this.handleCommandAwaitSuccess(command,val)
+				this._handleCommandAwaitSuccess(command,val)
 			}
-		}).catch(err => this.handleCommandAwaitFail(command,err))
+		}).catch(err => this._handleCommandAwaitFail(command,err))
 
-		// if(command.cooldown || command.await){
-		// 	let promise = Promise.resolve(command.process.call(this,msg,args,command))
-		// 	// console.log('isPromise',promise);
-		// 	promise.then((val) => {
-		// 		// console.log('Val Promise',val);
-		// 		if(command.cooldown){
-		// 			command.setCooldown(msg.author.id)
-		// 			// msg.channel.createMessage('CD established')
-		// 		}
-		// 		this.handleCommandAwaitSuccess(command,val)
-		// 	}).catch(err => this.handleCommandAwaitFail(command,err))
-		// }else{
-		// 	command.process.call(this,msg,args,command)
-		// }
-
-		// if(command.cooldown && command.autoCooldown){command.setCooldown(msg.author.id)}
-		// u.info('did a thing:', commandName, args.join(' '))
 	}
 
-	/***
-	 * Handle reactionAdd Eris evennt
-	 * @param  {Eris.Message} msg - Eris Message
-	 * @param  {Object} emoji - Reaction emoji added
-	 * @param  {string} userID - User reactioned
-	 */
-	handleReactionAdd(msg,emoji,userID){
-		this.events.messageReactionAdd.forEach(event => event.process.call(this,msg,emoji,userID))
+	_handleEvent(eventname){
+		return (...args) => {
+			this.events[eventname].forEach(event => {
+				if(!event.enable){return}
+				try{
+					event.process.call(this,...args)
+				}catch(err){
+					logger.error(`${event.name} got an error. => ${err.stack}`);
+					this.emit(`aghanim:${eventname}:error`, event, err, ...args)				
+				}
+			})
+		}
 	}
 
-	/***
-	 * Handle reactionRemove Eris evennt
-	 * @param  {Eris.Message} msg - Eris Message
-	 * @param  {object} emoji - Reaction emoji removed
-	 * @param  {string} userID - User removed the reaction
-	 */
-	handleReactionRemove(msg,emoji,userID){
-		this.events.messageReactionRemove.forEach(event => event.process.call(this,msg,emoji,userID))
-	}
-
-	/***
-	 * Handle guildCreate Eris evennt
-	 * @param  {Eris.Guild} guild - Guild that bot joined
-	 */
-	handleGuildCreate(guild){
-		this.events.guildCreate.forEach(event => event.process.call(this,guild))
-	}
-
-	/***
-	 * Handle guildDelete Eris evennt
-	 * @param  {Eris.Guild} guild - Guild that bot left
-	 */
-	handleGuildDelete(guild){
-		this.events.guildDelete.forEach(event => event.process.call(this,guild))
-	}
-
-	/***
-	 * Handle memberAdd Eris event
-	 * @param  {Eris.Guild} guild - Guild that member joined
-	 * @param  {Eris.Member} member - Member joined
-	 */
-	handleMemberAdd(guild,member){
-		this.events.guildMemberAdd.forEach(event => event.process.call(this,guild,member))
-	}
-
-	/***
-	 * Handle memberRemove Eris event
-	 * @param  {Eris.Guild} guild - Guild that member left
-	 * @param  {Eris.Member} member - Member left
-	 */
-	handleMemberRemove(guild,member){
-		this.events.guildMemberRemove.forEach(event => event.process.call(this,guild,member))
-	}
-
-	handleReady(){
-		this.events.ready.forEach(event => event.process.call(this))
-	}
-
-	handleCommandAwaitSuccess(command,val){
+	_handleCommandAwaitSuccess(command,val){
 		if(val === undefined){logger.warn(`${command.name} returned a promise with undefined value`)}
 	}
 
-	handleCommandAwaitFail(command,err){
+	_handleCommandAwaitFail(command,err){
 		logger.warn(`<${command.name}> returned a failed promise: ${err}`);
+		/**
+		 * Command Error Event
+		 * @event Client#aghanim:command:error
+		 * @param {object} err - Error
+		 * @param {Command} command - Command that fired the error
+		 */
+		this.emit('aghanim:command:error',err,command)
 	}
 
 	/**
@@ -348,10 +285,13 @@ class Client extends Eris.Client {
 	    const cmd = this.commands.find(c => [c.name,...c.aliases].includes(command.subcommandFrom))
 	    if(!cmd){throw new Error('Upcommand not found',command.subcommandFrom)}
 	    else{
-				if(command.category !== cmd.category){command.category = cmd.category;logger.warn(`${command.category} not same upcomand! Established as ${cmd.category}`)}
-	      command.upcommand = cmd
-	      cmd.subcommands.push(command)
-				logger.dev(`Subcommand added: ${command.name} from ${cmd.name}`)
+			if(command.category !== cmd.category){
+				command.category = cmd.category
+				logger.warn(`${command.category} not same upcomand! Established as ${cmd.category}`)
+			}
+	    	command.upcommand = cmd
+	    	cmd.subcommands.push(command)
+			logger.dev(`Subcommand added: ${command.name} from ${cmd.name}`)
 	    }
 	  }
 		return this
@@ -379,25 +319,9 @@ class Client extends Eris.Client {
 			const command = reload(filename)
 			command.filename = filename
 			this.addCommand(command)
-			// u.debug('Added command from', filename)
 		} catch (err) {
 			logger.error(err)
-			// console.log(err);
-			// u.warn('Command from', filename, "couldn't be loaded.\n", e)
 		}
-		return this
-	}
-
-	addCommandModule (dirname) {
-		if (!dirname.endsWith('/')) dirname += '/'
-		// const pattern = dirname + '*.js'
-		// const filenames = glob.sync(pattern)
-		// for (let filename of filenames) {
-		// 	this.addCommandFile(filename)
-		// }
-		this.addCommandDir(dirname + 'commands')
-		this.addCommandDir(dirname + 'subcommands')
-		// this.addCommandDir(path.join(__dirname, 'subcommands'))
 		return this
 	}
 
@@ -422,10 +346,12 @@ class Client extends Eris.Client {
 	addExtension(extension){
 		if (!(extension instanceof Extension)) throw new TypeError('Not a extension')
 		try{
-			Promise.resolve(extension.process(this,Eris)).then(() => {this.extensions.push(extension);logger.dev(`Extension added: ${extension.name}`)})
+			Promise.resolve(extension.process(this,Eris)).then(() => {
+				this.extensions.push(extension);
+				logger.dev(`Extension added: ${extension.name}`)
+			})
 		}catch(err){
 			logger.error(err)
-			// console.log(err);
 		}
 	}
 
@@ -438,11 +364,8 @@ class Client extends Eris.Client {
 			const extension = reload(filename)
 			extension.filename = filename
 			this.addExtension(extension)
-			// u.debug('Added command from', filename)
 		} catch (err) {
 			logger.error(err)
-			// console.log(err);
-			// u.warn('Command from', filename, "couldn't be loaded.\n", e)
 		}
 		return this
 	}
@@ -590,8 +513,6 @@ class Client extends Eris.Client {
 		event.client = this
 		this.events[event.event].push(event)
 		logger.dev(`Event added: ${event.name} for ${event.event} event`)
-		// console.log('Added Event',event.name);
-		// console.log(this.events[event]);
 	}
 
 	/**
@@ -603,10 +524,8 @@ class Client extends Eris.Client {
 			const event = reload(filename)
 			event.filename = filename
 			this.addEvent(event)
-			// u.debug('Added command from', filename)
 		} catch (err) {
 			logger.error(err)
-			// u.warn('Command from', filename, "couldn't be loaded.\n", e)
 		}
 		return this
 	}
@@ -624,6 +543,7 @@ class Client extends Eris.Client {
 		}
 		return this
 	}
+
 	// /**
 	//  * Creates a message. If the specified message content is longer than 2000
 	//  * characters, splits the message intelligently into chunks until each chunk

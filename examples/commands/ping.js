@@ -1,7 +1,7 @@
 const { Command } = require('aghanim')
 
 module.exports = new Command('ping',{
-  category : 'Owner', help : 'Parche actual de dota', args : '',
+  category : 'Owner', help : 'Pong!', args : '',
   ownerOnly : true, hide : true},
   function(msg, args, command){
     // let self = this //this representing Aghanim.Client
