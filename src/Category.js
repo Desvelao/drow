@@ -8,15 +8,14 @@ class Category {
    * @param {object} options.hide - Hide when use default help command
    * @param {object} options.restrict -
    */
-	constructor (name, help, options) {
-		if(!name){throw new Error('Name is required')}
+	constructor(name, help, options = {}) {
+		if (!name) { throw new Error('Name is required') }
 		this.name = name || ''
 		this.help = help || `Help for ${this.name} category`
-		options = options || {}
 		this.hide = options.hide || false
-		this.restrict = options.restrict || function(){return false}
-		for (var opt in options) {
-			if (!this.hasOwnProperty(opt)) {
+		this.restrict = options.restrict || function () { return false } /* eslint func-names : "off" */
+		for (const opt in options) { /* eslint no-restricted-syntax : "off" */
+			if (!this.hasOwnProperty(opt)) { /* eslint no-prototype-builtins : "off" */
 				this[opt] = options[opt]
 			}
 		}
@@ -24,26 +23,3 @@ class Category {
 }
 
 module.exports = Category
-
-// /**
-//  * @namespace MyNamespace.MySubNamespace
-//  */
-//
-//  (function (MyNamespace) {
-//      /**
-//       * Foo namespace
-//       * @namespace Foo
-//       * @memberOf MyNamespace.MySubNamespace
-//       */
-//      var Foo = {
-//          /**
-//           * Does something.
-//           * @memberOf MyNamespace.MySubNamespace.Foo
-//           * @param {object} someParam Some parameter.
-//           */
-//          doSomething: function (someParam) {
-//              // doing it
-//          }
-//      };
-//      MyNamespace.MySubNamespace.Foo = Foo;
-//  })(window.MyNamespace)
