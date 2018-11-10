@@ -1,17 +1,20 @@
-const Eris = require('eris');
-const glob = require('glob');
+const Eris = require('eris')
+const glob = require('glob')
 const Logger = require('another-logger')
-const Command = require('./Command');
-const Category = require('./Category');
-const Extension = require('./Extension');
-const Event = require('./Event')
-const { eventNames } = require('./Event');
-const reload = require('require-reload')(require);
+const Command = require('./Command')
+const Category = require('./Category')
+const Plugin = require('./Plugin')
+const reload = require('require-reload')(require)
 
 const DEFAULT_CATEGORY = 'Default'
 
 // Logger
-let logger
+const logger = new Logger({
+	label: 'Aghanim',
+	timestamps: true,
+	levels: { dev: { style: 'magenta' } },
+	// ignoredLevels: [this.devLogs ? '' : 'dev']
+})
 /**
  * Aghanim Client extends from Eris.Client
  * @extends Eris.Client
@@ -35,28 +38,31 @@ class Client extends Eris.Client {
 	* @param {boolean} [options.devLogs = false] - Enable/disable default command help
 	*/
 	constructor(token, options = {}) {
+		// Attempt to load options from aghanim.config.js(on) file
+		try {
+			options = require(`${process.cwd()}/aghanim.config`) /* eslint import/no-dynamic-require : "off", global-require : "off", no-param-reassign : "off" */
+			logger.info('Found Aghanim default config file: aghanim.config.js(on)')
+		} catch (err) {
+			logger.info('Not found Aghanim default config file: aghanim.config.js(on)')
+		}
 		super(token, options)
-
 		this.devLogs = options.devLogs || false
 		// options.disableHelp = options.disableHelp || false
-		logger = new Logger({
-			label: 'Aghanim',
-			timestamps: true,
-			levels: {dev: { style: 'magenta' } },
-			ignoredLevels: [this.devLogs ? '' : 'dev']
-		})
+		logger._config.ignoredLevels = [this.devLogs ? '' : 'dev']
 
 		/** @prop {string} - The prefix the bot will respond to in guilds
 		 * for which there is no other confguration. */
 		this.defaultPrefix = options.prefix
 		/** @prop {Command[]} - An array of commands the bot will respond to. */
 		this.commands = []
-		/** @prop {Object.<string, Event>} - An array of commands the bot will respond to. */
-		this.events = {}
 		/** @prop {Category[]} - Categories for commands. */
 		this.categories = []
+		/** @prop {Object<Plugin>} - Plugins. */
+		this.plugins = {}
 		/** @prop {Object} - Setup */
 		this.setup = {}
+
+		this._ready = false
 		if (this.defaultPrefix === '') {
 			throw new Error('Prefix has not defined!')
 		}
@@ -66,22 +72,10 @@ class Client extends Eris.Client {
 		/** @prop {boolean} - Whether or not the bot ignores messages
 		*sent from bot accounts. Defaults to true. */
 		this.ignoreBots = options.ignoreBots == null ? true : options.ignoreBots
-		this.extensions = []
-		options.extensions = options.extensions || []
-		eventNames.forEach(event => this.events[event] = [])
-
-		// Load extensions
-		if (options.extensions.length) {
-			options.extensions.forEach((ext) => {
-				try {
-					this.addExtension(require('./extensions/' + ext + '.js'))
-				} catch (err) {
-					logger.error(`Extension built-in ${ext} doesn't exist or occured and error`)
-				}
-			})
-		}
 
 		this.on('ready', () => {
+			if (this._ready) { return }
+			this._ready = true
 			/**
 			 * @prop {RegExp} - The RegExp used to tell whether or not a message starts
 			 *     with a mention of the bot. Only present after the 'ready' event.
@@ -113,7 +107,7 @@ class Client extends Eris.Client {
 				 * @prop {string} avatar - Owner avatar
 				 * @prop {ClientOwner~send} send - Send a message to Owner
 				 */
-				this.owner = Object.assign({},this.app.owner)
+				this.owner = Object.assign({}, this.app.owner)
 				this.getDMChannel(this.owner.id).then((channel) => {
 					/**
 					 * Function to send messages to owner
@@ -121,12 +115,14 @@ class Client extends Eris.Client {
 					 * @param  {string|object} content - Message content to send
 					 * @param  {object} file - Message content to send
 					 */
-					this.owner.send = function (content, file) { channel.createMessage(content, file) }
+					this.owner.send = function ownerSend(content, file) { channel.createMessage(content, file) }
 				})
+
 				this._handleEvent('ready')()
 			})		
 		}).on('error', (err) => {
 			logger.error(err)
+			// this.emit('aghanim:error')
 		}).on('messageCreate', this.handleMessage)
 			.on('messageReactionAdd', this._handleEvent('messageReactionAdd'))
 			.on('messageReactionRemove', this._handleEvent('messageReactionRemove'))
@@ -171,7 +167,6 @@ class Client extends Eris.Client {
 	/**
 	 * Given a message, see if there is a command and process it if so.
 	 * @param {Object} msg - The message object recieved from Eris.
-	 * @returns
 	 */
 	handleMessage(msg) {
 		this._handleEvent('messageCreate')(msg)
@@ -228,46 +223,53 @@ class Client extends Eris.Client {
 				}
 			}
 		}
-
-		Promise.resolve(command.process.call(this, msg, args, command)).then((val) => {
-			// logger.log('Val Promise',val);
-			if (command.cooldown) {
-				command.setCooldown(msg.author.id)
-			}
-			if (command.cooldown || command.await) {
-				this._handleCommandAwaitSuccess(command, val)
-			}
-		}).catch(err => this._handleCommandAwaitFail(command, err))
+		
+		try{
+			Promise.resolve(command.process.call(this, msg, args, command)).then((val) => {
+				// logger.log('Val Promise',val);
+				if (command.cooldown) {
+					command.setCooldown(msg.author.id)
+				}
+				if (command.cooldown || command.await) {
+					if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
+				}
+			}).catch(err => {
+				logger.warn(`<${command.name}> returned a failed promise: ${err}`)
+				/**
+				 * Command Error Event
+				 * @event Client#aghanim:command:error
+				 * @param {object} err - Error
+				 * @param {Command} command - Command that fired the error
+				 */
+				this.emit('aghanim:command:error', err, msg, args, command)
+			})
+		}catch(err){
+			logger.error('Error Command TryCatched =>', err)
+			/**
+			 * Command Error Event
+			 * @event Client#aghanim:command:error
+			 * @param {object} err - Error
+			 * @param {Command} command - Command that fired the error
+			 */
+			this.emit('aghanim:command:error', err, msg, args, command)
+		}
 
 	}
 
 	_handleEvent(eventname) {
 		return (...args) => {
-			this.events[eventname].forEach((event) => {
-				if (!event.enable){ return }
-				try {
-					event.process.call(this,...args)
-				} catch (err) {
-					logger.error(`${event.name} got an error. => ${err.stack}`)
-					this.emit(`aghanim:${eventname}:error`, event, err, ...args)
-				}
-			})
+			Object.keys(this.plugins)
+				.map((pluginName) => this.plugins[pluginName])
+				.filter((plugin) => plugin[eventname] && plugin.enable)
+				.forEach((plugin) => {
+					try {
+						plugin[eventname](...args)
+					} catch (err) {
+						logger.error(`${plugin.constructor.name} got an error. => ${err}`)
+						this.emit(`aghanim:error`, err)
+					}
+				})
 		}
-	}
-
-	_handleCommandAwaitSuccess(command, val) {
-		if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
-	}
-
-	_handleCommandAwaitFail(command,err) {
-		logger.warn(`<${command.name}> returned a failed promise: ${err}`)
-		/**
-		 * Command Error Event
-		 * @event Client#aghanim:command:error
-		 * @param {object} err - Error
-		 * @param {Command} command - Command that fired the error
-		 */
-		this.emit('aghanim:command:error', err, command)
 	}
 
 	/**
@@ -341,30 +343,30 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Add a Extension
-	 * @param {Extension} extension Extension
+	 * Add a Plugin
+	 * @param {Plugin} plugin Plugin {@link Plugin}
 	 */
-	addExtension(extension) {
-		if (!(extension instanceof Extension)) throw new TypeError('Not a extension')
+	addPlugin(plugin, options) {
+		if (!(plugin.prototype instanceof Plugin)) throw new TypeError(`Not a Plugin => ${plugin}`)
+		// if (plugin.__proto__ !== Plugin) throw new TypeError(`Not a Plugin => ${plugin}`)
+		if (this.plugins[plugin.name]){ throw new Error(`Plugin exists => ${plugin.name}`)}
 		try {
-			Promise.resolve(extension.process(this,Eris)).then(() => {
-				this.extensions.push(extension);
-				logger.dev(`Extension added: ${extension.name}`)
-			})
+			this.plugins[plugin.name] = new plugin(this,options)
+			logger.dev(`Plugin Added: ${plugin.name}`)
 		} catch (err) {
 			logger.error(err)
 		}
 	}
 
 	/**
-	 * Add extension from file
+	 * Add plugin from file
 	 * @param {string} filename Path to file
 	 */
-	addExtensionFile(filename) {
+	addPluginFile(filename) {
 		try {
-			const extension = reload(filename)
-			extension.filename = filename
-			this.addExtension(extension)
+			const plugin = reload(filename)
+			plugin.filename = filename
+			this.addPlugin(plugin)
 		} catch (err) {
 			logger.error(err)
 		}
@@ -372,15 +374,15 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Add extensions from a directory
-	 * @param {string} dirname Path to load extensions
+	 * Add plugins from a directory
+	 * @param {string} dirname Path to load plugins
 	 */
-	addExtensionDir(dirname) {
+	addPluginDir(dirname) {
 		if (!dirname.endsWith('/')) dirname += '/'
 		const pattern = `${dirname}*.js`
 		const filenames = glob.sync(pattern)
 		for (let filename of filenames) {
-			this.addExtensionFile(filename)
+			this.addPluginFile(filename)
 		}
 		return this
 	}
@@ -500,49 +502,6 @@ class Client extends Eris.Client {
 		const member = msg.channel.guild.members.get(msg.author.id)
 		if(!member) return
 		return !Object.keys(permissions).map(p => ({name : p, enable : permissions[p]})).some(p => member.permission.json[p.name] !== p.enable)
-	}
-
-	/**
-	 * Add a Event
-	 * @param {Event} event - Add a event
-	 */
-	addEvent(event) {
-		if (!(event instanceof Event)) throw new TypeError(`Not a event ${event.name}`)
-		if (!event.enable) { return logger.warn(`${event.name} from ${event.event} isn't enabled`) }
-		const events = Object.keys(this.events)
-		if (!events.includes(event.event)) { return logger.error(`Event ${event.event} doesn't valid. In ${event.name}`) }
-		event.client = this
-		this.events[event.event].push(event)
-		logger.dev(`Event added: ${event.name} for ${event.event} event`)
-	}
-
-	/**
-	 * Add a Event from a file
-	 * @param {string} filename Path to file
-	 */
-	addEventFile(filename) {
-		try {
-			const event = reload(filename)
-			event.filename = filename
-			this.addEvent(event)
-		} catch (err) {
-			logger.error(err)
-		}
-		return this
-	}
-
-	/**
-	 * Add events from a directory
-	 * @param {string} dirname - Directory path
-	 */
-	addEventDir(dirname) {
-		if (!dirname.endsWith('/')) dirname += '/'
-		const pattern = `${dirname}*.js`
-		const filenames = glob.sync(pattern)
-		for (let filename of filenames) {
-			this.addEventFile(filename)
-		}
-		return this
 	}
 
 	// /**

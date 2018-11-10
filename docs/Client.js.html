@@ -26,98 +26,90 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const Eris = require('eris');
-const glob = require('glob');
+            <pre class="prettyprint source linenums"><code>const Eris = require('eris')
+const glob = require('glob')
 const Logger = require('another-logger')
-const Command = require('./Command');
-const Category = require('./Category');
-const Extension = require('./Extension');
-const Event = require('./Event'), { eventNames } = require('./Event');
-const reload = require('require-reload')(require);
-
-const utilsSort = require('./utils/sort')
+const Command = require('./Command')
+const Category = require('./Category')
+const Plugin = require('./Plugin')
+const reload = require('require-reload')(require)
 
 const DEFAULT_CATEGORY = 'Default'
 
-//Logger
-let logger
+// Logger
+const logger = new Logger({
+	label: 'Aghanim',
+	timestamps: true,
+	levels: { dev: { style: 'magenta' } },
+	// ignoredLevels: [this.devLogs ? '' : 'dev']
+})
 /**
  * Aghanim Client extends from Eris.Client
  * @extends Eris.Client
  */
 class Client extends Eris.Client {
 	/**
-	 * Create a client instance.
-	 * @class
-	 * @param {string} token - The token used to log into the bot.
-	 * @param {Object} options - Options to start the client with. This object is also passed to Eris.
-	 * @param {string} options.prefix - The prefix the bot will respond to in
-	 *     guilds for which there is no other confguration. (Currently everywhere)
-	 * @param {boolean} [options.allowMention = false] - Whether or not the bot can respond
-	 *     to messages starting with a mention of the bot.
-	 * @param {boolean} [options.ignoreBots = true] - Whether or not the bot ignoresBots. Default: true
-	 * @param {number} options.logLevel - The minimum message level for logged events in the console.
-	 * @param {string} [options.helpMessage = '**Help**'] - Title for default command help Message
-	 * @param {string} [options.helpMessageAfterCategories = '**Note**: Use \`${options.prefix}help &lt;category>\` to see those commands'] - Message after categories in default command help message are shown
-	 * @param {boolean} [options.helpDM = true] - Active direct message to default command help
-	 * @param {boolean} [options.helpEnable = true] - Enable/disable default command help
-	 * @param {boolean} [options.devLogs = false] - Enable/disable default command help
-	 */
-	constructor (token,options = {}) {
+	* Create a client instance.
+	* @class
+	* @param {string} token - The token used to log into the bot.
+	* @param {Object} options - Options to start the client with. This object is also passed to Eris.
+	* @param {string} options.prefix - The prefix the bot will respond to in
+	*     guilds for which there is no other confguration. (Currently everywhere)
+	* @param {boolean} [options.allowMention = false] - Whether or not the bot can respond
+	*     to messages starting with a mention of the bot.
+	* @param {boolean} [options.ignoreBots = true] - Whether or not the bot ignoresBots. Default: true
+	* @param {number} options.logLevel - The minimum message level for logged events in the console.
+	* @param {string} [options.helpMessage = '**Help**'] - Title for default command help Message
+	* @param {string} [options.helpMessageAfterCategories = '**Note**: Use \`${options.prefix}help &lt;category>\` to see those commands'] - Message after categories in default command help message are shown
+	* @param {boolean} [options.helpDM = true] - Active direct message to default command help
+	* @param {boolean} [options.helpEnable = true] - Enable/disable default command help
+	* @param {boolean} [options.devLogs = false] - Enable/disable default command help
+	*/
+	constructor(token, options = {}) {
+		// Attempt to load options from aghanim.config.js(on) file
+		try{
+			options = require(`${process.cwd()}/aghanim.config`)
+			logger.info('Found Aghanim default config file: aghanim.config.js(on)')
+		}catch(err){
+			logger.info('Not found Aghanim default config file: aghanim.config.js(on)')
+		}
 		super(token, options)
+		this.devLogs = options.devLogs || false
+		// options.disableHelp = options.disableHelp || false
+		logger._config.ignoredLevels = [this.devLogs ? '' : 'dev']
 
-		options.devLogs = options.devLogs || false
-		options.disableHelp = options.disableHelp || false
-		logger = new Logger({
-			label : 'Aghanim',
-		  timestamps : true,
-		  levels : {
-		    dev : {style : 'magenta'}
-		  },
-			ignoredLevels: [options.devLogs ? '' : 'dev']
-		})
-		
-		/** @prop {string} - The prefix the bot will respond to in guilds for which there is no other confguration.*/
+		/** @prop {string} - The prefix the bot will respond to in guilds
+		 * for which there is no other confguration. */
 		this.defaultPrefix = options.prefix
-		/**@prop {Command[]} - An array of commands the bot will respond to.*/
+		/** @prop {Command[]} - An array of commands the bot will respond to. */
 		this.commands = []
-		/** @prop {Object.&lt;string, Event>} - An array of commands the bot will respond to.*/
-		this.events = {}
-		/** @prop {Category[]} - Categories for commands.*/
+		/** @prop {Category[]} - Categories for commands. */
 		this.categories = []
-		/**@prop {Object} - Setup*/
+		/** @prop {Object&lt;Plugin>} - Plugins. */
+		this.plugins = {}
+		/** @prop {Object} - Setup */
 		this.setup = {}
+
+		this._ready = false
 		if (this.defaultPrefix === '') {
-			// u.warn('defaultPrefix is an empty string, bot will not require a prefix to run commands')
 			throw new Error('Prefix has not defined!')
 		}
-		/** @prop {boolean} - Whether or not the bot can respond to messages starting with a mention of the bot. Defaults to true.*/
+		/** @prop {boolean} - Whether or not the bot can respond to messages
+		 * starting with a mention of the bot. Defaults to true. */
 		this.allowMention = options.allowMention === null ? false : options.allowMention
-		/**@prop {boolean} - Whether or not the bot ignores messages sent from bot accounts. Defaults to true.*/
+		/** @prop {boolean} - Whether or not the bot ignores messages
+		*sent from bot accounts. Defaults to true. */
 		this.ignoreBots = options.ignoreBots == null ? true : options.ignoreBots
-		this.extensions = []
-		options.extensions = options.extensions || []
-		eventNames.forEach(event => this.events[event] = [])
-
-		//Load extensions
-		if(options.extensions.length){
-			options.extensions.forEach(ext => {
-				try{
-					this.addExtension(require('./extensions/'+ext+'.js'))
-				}catch(err){
-					logger.error(`Extension built-in ${ext} doesn't exist or occured and error`)
-				}
-			})
-		}
 
 		this.on('ready', () => {
+			if(this._ready){return}else{this._ready = true}
 			/**
 			 * @prop {RegExp} - The RegExp used to tell whether or not a message starts
 			 *     with a mention of the bot. Only present after the 'ready' event.
 			 */
 			this.mentionPrefixRegExp = new RegExp(`^&lt;@!?${this.user.id}>\\s?`)
 
-			this.getOAuthApplication().then(app => {
+			this.getOAuthApplication().then((app) => {
 				/**
 				 * @prop {object} - The OAuth application information returned by
 				 *     Discord. Present some time after the ready event.
@@ -143,23 +135,20 @@ class Client extends Eris.Client {
 				 * @prop {ClientOwner~send} send - Send a message to Owner
 				 */
 				this.owner = Object.assign({},this.app.owner)
-				this.getDMChannel(this.owner.id).then(channel => {
+				this.getDMChannel(this.owner.id).then((channel) => {
 					/**
 					 * Function to send messages to owner
 					 * @callback ClientOwner~send
 					 * @param  {string|object} content - Message content to send
 					 * @param  {object} file - Message content to send
 					 */
-					this.owner.send = function(content,file){channel.createMessage(content,file)}
+					this.owner.send = function (content, file) { channel.createMessage(content, file) }
 				})
-				this._handleEvent('ready')()
-			})
 
-			// u.ok('Logged in as', u.underline(`@${this.user.username}#${this.user.discriminator}`), `- in ${this.guilds.size} guild${this.guilds.size === 1 ? '' : 's'}, ${this.commands.length} command${this.commands.length === 1 ? '' : 's'} loaded`)
-		}).on('error', err => {
+				this._handleEvent('ready')()
+			})		
+		}).on('error', (err) => {
 			logger.error(err)
-			// console.log(err);
-			// u.error('Error in client:\n', err)
 		}).on('messageCreate', this.handleMessage)
 			.on('messageReactionAdd', this._handleEvent('messageReactionAdd'))
 			.on('messageReactionRemove', this._handleEvent('messageReactionRemove'))
@@ -168,41 +157,44 @@ class Client extends Eris.Client {
 			.on('guildMemberAdd', this._handleEvent('guildMemberAdd'))
 			.on('guildMemberRemove', this._handleEvent('guildMemberRemove'))
 
-		this.setup.helpMessage = (options.helpMessage || '**Help**') + '\n\n'
-		this.setup.helpMessageAfterCategories = (options.helpMessageAfterCategories || `**Note**: Use \`${this.defaultPrefix}help &lt;category>\` to see those commands`) + '\n\n'
+		this.setup.helpMessage = `${options.helpMessage || '**Help**'}\n\n`
+		this.setup.helpMessageAfterCategories = `${options.helpMessageAfterCategories || `**Note**: Use \`${this.defaultPrefix}help &lt;category>\` to see those commands`}\n\n`
 		this.setup.helpDM = options.helpDM || false
-		if(!options.disableHelp){
-			//Add default help command to bot
-			this.addCommand(new Command('help',{},(msg, args, command) => {
+		if (!options.disableHelp) {
+			// Add default help command to bot
+			this.addCommand(new Command('help', {}, (msg, args, command) => {
 				const categories = this.categories.map(c => c.name.toLowerCase())
 				const query = args.from(1).toLowerCase();
-				let helpMessage = this.setup.helpMessage
-				if(categories.includes(query)){
+				let { helpMessage } = this.setup
+				if (categories.includes(query)) {
 					const cmds = this.getCommandsFromCategories(query)
 					const prefix = this.defaultPrefix
-					if(!cmds){helpMessage += this.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${this.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + this.setup.helpMessageAfterCategories}//// TODO:
-					else{
+					if (!cmds) {
+						helpMessage += this.categories.filter((c) => !c.hide)
+							.map((c) => `**${c.name}** \`${this.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`)
+							.join('\n') + '\n\n' + this.setup.helpMessageAfterCategories}
+					else {
 						helpMessage += cmds.filter(c => !c.hide).map(c => {
 							return `\`${prefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${c.subcommands.length ? '\n' + c.subcommands.filter(s => !s.hide).map(s => `  · \`${s.name}${s.args ? ' ' + s.args : ''}\` - ${s.help}`).join('\n') : ''}`
 						}).join('\n')
 					}
-				}else{
+				}else {
 					helpMessage += this.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${this.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + this.setup.helpMessageAfterCategories
 				}
-				if(!this.setup.helpDM){
+				if (!this.setup.helpDM) {
 					msg.channel.createMessage(helpMessage)
-				}else{
+				} else {
 					msg.author.getDMChannel().then(channel => channel.createMessage(helpMessage))
 				}
 			}))
 		}
 	}
 
-	/***
+	/**
 	 * Given a message, see if there is a command and process it if so.
 	 * @param {Object} msg - The message object recieved from Eris.
 	 */
-	handleMessage (msg) {
+	handleMessage(msg) {
 		this._handleEvent('messageCreate')(msg)
 
 		if (this.ignoreBots &amp;&amp; msg.author.bot) return
@@ -216,8 +208,8 @@ class Client extends Eris.Client {
 		// 	if (!defaultCommand) return
 		// 	defaultCommand.process.call(this, msg, [], prefix, null)
 		// }
-		let args = content.split(' ')
-		const commandName = args[0] //.splice(0, 1)
+		const args = content.split(' ')
+		const commandName = args[0]
 		const subCommandName = args[1]
 		/**
 		 * Message is spit for spaces (' ')
@@ -231,110 +223,112 @@ class Client extends Eris.Client {
 		 */
 		args.prefix = prefix
 		args.content = content
-		args.from = (arg) => msg.content.replace(this.defaultPrefix + args.slice(0,arg).join(' ') + ' ','')
-		args.until = (arg) => this.defaultPrefix + args.slice(0,arg).join(' ')
+		args.from = arg => msg.content.replace(`${this.defaultPrefix}${args.slice(0, arg).join(' ')} `, '')
+		args.until = arg => this.defaultPrefix + args.slice(0, arg).join(' ')
 		args.after = args.from(1)
 
-		let command = this.commandForName(commandName,subCommandName)
+		const command = this.commandForName(commandName, subCommandName)
 		if (!command) return
-		if(!command.enable) return
-		if(command.guildOnly &amp;&amp; msg.channel.type !== 0) return
-		if(command.dmOnly &amp;&amp; msg.channel.type !== 1) return
-		if(command.userOnly &amp;&amp; !command.userOnly.includes(msg.author.id)) return
-		if(command.ownerOnly &amp;&amp; msg.author.id !== this.owner.id) return
-		if(command.check &amp;&amp; !command.check(msg, args, command, this)) return
-		if(command.rolesCanUse &amp;&amp; !this.checkRolesCanUse(msg,command.rolesCanUse)) return
-		if(command.permissions &amp;&amp; !this.checkHasPermissions(msg,command.permissions)) return
-		if(command.cooldown){
+		if (!command.enable) return
+		if (command.guildOnly &amp;&amp; msg.channel.type !== 0) return
+		if (command.dmOnly &amp;&amp; msg.channel.type !== 1) return
+		if (command.userOnly &amp;&amp; !command.userOnly.includes(msg.author.id)) return
+		if (command.ownerOnly &amp;&amp; msg.author.id !== this.owner.id) return
+		if (command.check &amp;&amp; !command.check(msg, args, command, this)) return
+		if (command.rolesCanUse &amp;&amp; !this.checkRolesCanUse(msg, command.rolesCanUse)) return
+		if (command.permissions &amp;&amp; !this.checkHasPermissions(msg, command.permissions)) return
+		if (command.cooldown) {
 			const cd = command.getCooldown(msg.author.id)
-			if(cd > 0){
-				if(typeof command.cooldownMessage === 'string'){
-					return msg.channel.createMessage(command.cooldownMessage.replace(new RegExp('&lt;cd>', 'g'),cd).replace(new RegExp('&lt;username>', 'g'),msg.author.username))
-				}else if(typeof command.cooldownMessage === 'function'){
-					let cooldownMessage = command.cooldownMessage.call(this,msg,args,command,cd)
-					if(typeof cooldownMessage === 'string'){msg.channel.createMessage(cooldownMessage.replace(new RegExp('&lt;cd>', 'g'),cd).replace(new RegExp('&lt;username>', 'g'),msg.author.username))}
+			if (cd > 0) {
+				if (typeof command.cooldownMessage === 'string') {
+					return msg.channel.createMessage(command.cooldownMessage.replace(new RegExp('&lt;cd>', 'g'), cd).replace(new RegExp('&lt;username>', 'g'), msg.author.username))
+				} else if (typeof command.cooldownMessage === 'function') {
+					let cooldownMessage = command.cooldownMessage.call(this, msg, args, command, cd)
+					if (typeof cooldownMessage === 'string') { msg.channel.createMessage(cooldownMessage.replace(new RegExp('&lt;cd>', 'g'), cd).replace(new RegExp('&lt;username>', 'g'), msg.author.username)) }
 					return
 				}
 			}
 		}
 
-		Promise.resolve(command.process.call(this,msg,args,command)).then((val) => {
+		Promise.resolve(command.process.call(this, msg, args, command)).then((val) => {
 			// logger.log('Val Promise',val);
-			if(command.cooldown){
+			if (command.cooldown) {
 				command.setCooldown(msg.author.id)
 			}
-			if(command.cooldown || command.await){
-				this._handleCommandAwaitSuccess(command,val)
+			if (command.cooldown || command.await) {
+				this._handleCommandAwaitSuccess(command, val)
 			}
-		}).catch(err => this._handleCommandAwaitFail(command,err))
+		}).catch(err => this._handleCommandAwaitFail(command, err))
 
 	}
 
-	_handleEvent(eventname){
+	_handleEvent(eventname) {
 		return (...args) => {
-			this.events[eventname].forEach(event => {
-				if(!event.enable){return}
-				try{
-					event.process.call(this,...args)
-				}catch(err){
-					logger.error(`${event.name} got an error. => ${err.stack}`);
-					this.emit(`aghanim:${eventname}:error`, event, err, ...args)				
-				}
-			})
+			Object.keys(this.plugins)
+				.map((pluginName) => this.plugins[pluginName])
+				.filter((plugin) => plugin[eventname] &amp;&amp; plugin.enable)
+				.forEach((plugin) => {
+					try {
+						plugin[eventname](...args)
+					} catch (err) {
+						logger.error(`${plugin.constructor.name} got an error. => ${err.stack}`)
+						this.emit(`aghanim:error`, err)
+					}
+				})
 		}
 	}
 
-	_handleCommandAwaitSuccess(command,val){
-		if(val === undefined){logger.warn(`${command.name} returned a promise with undefined value`)}
+	_handleCommandAwaitSuccess(command, val) {
+		if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
 	}
 
-	_handleCommandAwaitFail(command,err){
-		logger.warn(`&lt;${command.name}> returned a failed promise: ${err}`);
+	_handleCommandAwaitFail(command,err) {
+		logger.warn(`&lt;${command.name}> returned a failed promise: ${err}`)
 		/**
 		 * Command Error Event
 		 * @event Client#aghanim:command:error
 		 * @param {object} err - Error
 		 * @param {Command} command - Command that fired the error
 		 */
-		this.emit('aghanim:command:error',err,command)
+		this.emit('aghanim:command:error', err, command)
 	}
 
 	/**
 	 * Register a command to the client.
 	 * @param {Command} command - The command to add to the bot.
 	 */
-	addCommand(command){
+	addCommand(command) {
 		if (!(command instanceof Command)) throw new TypeError('Not a command')
-		if(!this.categories.find(c => c.name === command.category)){command.category = DEFAULT_CATEGORY;logger.warn(`${command.category} not found! Established as ${DEFAULT_CATEGORY} in ${command.name}`)}
+		if (!this.categories.find(c => c.name === command.category)) { command.category = DEFAULT_CATEGORY; logger.warn(`${command.category} not found! Established as ${DEFAULT_CATEGORY} in ${command.name}`) }
 		command.client = this
-		if(!command.subcommandFrom){
-	    const cmd = this.commands.find(c => [c.name,...c.aliases].some(cname => [command.name,...command.aliases].includes(cname)))
-	    if(cmd){throw new Error('Command exists',command.name)}
-	    else{this.commands.push(command);logger.dev(`Command added: ${command.name}`)}
-	  }else{
-	    const cmd = this.commands.find(c => [c.name,...c.aliases].includes(command.subcommandFrom))
-	    if(!cmd){throw new Error('Upcommand not found',command.subcommandFrom)}
-	    else{
-			if(command.category !== cmd.category){
-				command.category = cmd.category
-				logger.warn(`${command.category} not same upcomand! Established as ${cmd.category}`)
+		if (!command.subcommandFrom) {
+			const cmd = this.commands.find(c => [c.name, ...c.aliases].some(cname => [command.name, ...command.aliases].includes(cname)))
+			if (cmd) {throw new Error('Command exists', command.name)}
+			else { this.commands.push(command); logger.dev(`Command added: ${command.name}`) }
+		} else {
+			const cmd = this.commands.find(c => [c.name, ...c.aliases].includes(command.subcommandFrom))
+			if (!cmd) { throw new Error('Upcommand not found', command.subcommandFrom) }
+			else {
+				if (command.category !== cmd.category) {
+					command.category = cmd.category
+					logger.warn(`${command.category} not same upcomand! Established as ${cmd.category}`)
+				}
+				command.upcommand = cmd
+				cmd.subcommands.push(command)
+				logger.dev(`Subcommand added: ${command.name} from ${cmd.name}`)
 			}
-	    	command.upcommand = cmd
-	    	cmd.subcommands.push(command)
-			logger.dev(`Subcommand added: ${command.name} from ${cmd.name}`)
-	    }
-	  }
+		}
 		return this
 	}
 	/**
 	 * Load all the JS files in a directory and attempt to load them each as commands.
 	 * @param {string} dirname - The location of the directory.
 	 */
-	addCommandDir (dirname) {
+	addCommandDir(dirname) {
 		if (!dirname.endsWith('/')) dirname += '/'
-		const pattern = dirname + '*.js'
+		const pattern = `${dirname}*.js`
 		const filenames = glob.sync(pattern)
-		for (let filename of filenames) {
+		for (const filename of filenames) {
 			this.addCommandFile(filename)
 		}
 		return this
@@ -344,16 +338,13 @@ class Client extends Eris.Client {
 	 * Load a command exported from a file.
 	 * @param {string} filename - The location of the file.
 	 */
-	addCommandFile (filename) {
+	addCommandFile(filename) {
 		try {
 			const command = reload(filename)
 			command.filename = filename
 			this.addCommand(command)
-			// u.debug('Added command from', filename)
 		} catch (err) {
 			logger.error(err)
-			// console.log(err);
-			// u.warn('Command from', filename, "couldn't be loaded.\n", e)
 		}
 		return this
 	}
@@ -367,55 +358,51 @@ class Client extends Eris.Client {
 	 * @param {object} options.restrict - Options
 	 */
 	addCategory(name, help, options) {
-		const category = new Category(name,help,options)
-		if(this.categories.find(c => c.name === category.name)){throw new Error(`Category ${category.name} exists`)}
-		else{this.categories.push(category);logger.dev(`Category added: ${category.name}`)}
+		const category = new Category(name, help, options)
+		if (this.categories.find(c => c.name === category.name)) { throw new Error(`Category ${category.name} exists`) }
+		else { this.categories.push(category); logger.dev(`Category added: ${category.name}`) }
 	}
 
 	/**
-	 * Add a Extension
-	 * @param {Extension} extension Extension
+	 * Add a Plugin
+	 * @param {Plugin} plugin Plugin {@link Plugin}
 	 */
-	addExtension(extension){
-		if (!(extension instanceof Extension)) throw new TypeError('Not a extension')
-		try{
-			Promise.resolve(extension.process(this,Eris)).then(() => {
-				this.extensions.push(extension);
-				logger.dev(`Extension added: ${extension.name}`)
-			})
-		}catch(err){
+	addPlugin(plugin, options) {
+		if (plugin.__proto__ !== Plugin) throw new TypeError(`Not a Plugin => ${plugin}`)
+		if (this.plugins[plugin.name]){ throw new Error(`Plugin exists => ${plugin.name}`)}
+		try {
+			this.plugins[plugin.name] = new plugin(this,options)
+			logger.dev(`Plugin Added: ${plugin.name}`)
+		} catch (err) {
 			logger.error(err)
 		}
 	}
 
 	/**
-	 * Add extension from file
+	 * Add plugin from file
 	 * @param {string} filename Path to file
 	 */
-	addExtensionFile(filename){
+	addPluginFile(filename) {
 		try {
-			const extension = reload(filename)
-			extension.filename = filename
-			this.addExtension(extension)
-			// u.debug('Added command from', filename)
+			const plugin = reload(filename)
+			plugin.filename = filename
+			this.addPlugin(plugin)
 		} catch (err) {
 			logger.error(err)
-			// console.log(err);
-			// u.warn('Command from', filename, "couldn't be loaded.\n", e)
 		}
 		return this
 	}
 
 	/**
-	 * Add extensions from a directory
-	 * @param {string} dirname Path to load extensions
+	 * Add plugins from a directory
+	 * @param {string} dirname Path to load plugins
 	 */
-	addExtensionDir (dirname) {
+	addPluginDir(dirname) {
 		if (!dirname.endsWith('/')) dirname += '/'
-		const pattern = dirname + '*.js'
+		const pattern = `${dirname}*.js`
 		const filenames = glob.sync(pattern)
 		for (let filename of filenames) {
-			this.addExtensionFile(filename)
+			this.addPluginFile(filename)
 		}
 		return this
 	}
@@ -428,7 +415,7 @@ class Client extends Eris.Client {
 	 * `addCommandDir`. Useful for development to hot-reload commands as you work
 	 * on them.
 	 */
-	reloadCommands () {//TODO: subcommands not supported
+	reloadCommands() {//TODO: subcommands not supported
 		let i = this.commands.length
 		while (i--) {
 			const command = this.commands[i]
@@ -447,10 +434,10 @@ class Client extends Eris.Client {
 	 * @param {string} subcommand - The name of the subcommand to look for.
 	 * @returns {Command|null}
 	 */
-	commandForName (command,subcommand) {
-		const cmd = this.commands.find(c => {return [c.name, ...c.aliases].includes(command)})
-		if(!cmd) return
-		if(subcommand){
+	commandForName(command,subcommand) {
+		const cmd = this.commands.find(c => [c.name, ...c.aliases].includes(command))
+		if (!cmd) return
+		if (subcommand) {
 			const scmd = cmd.subcommands.find(c => [c.name, ...c.aliases].includes(subcommand))
 			// console.log('SCMD',subCommandFind);
 			return scmd || cmd
@@ -464,7 +451,7 @@ class Client extends Eris.Client {
 	 * @param {Object} msg - The message to check the prefix of.
 	 * @returns {string}
 	 */
-	prefixForMessage (msg) {
+	prefixForMessage(msg) {
 		return this.defaultPrefix
 		// TODO
 		// if (msg.channel.guild) return this.defaultPrefix
@@ -478,7 +465,7 @@ class Client extends Eris.Client {
 	 * @param {Object} msg - The message to process
 	 * @returns {Array&lt;String|null>}
 	 **/
-	splitPrefixFromContent (msg) {
+	splitPrefixFromContent(msg) {
 		// Traditional prefix handling - if there is no prefix, skip this rule
 		const prefix = this.prefixForMessage(msg) // TODO: guild config
 		if (prefix != null &amp;&amp; msg.content.startsWith(prefix)) {
@@ -497,8 +484,8 @@ class Client extends Eris.Client {
 		return [null, null]
 	}
 
-	findCategories(categories){
-		if(!Array.isArray(categories)){
+	findCategories(categories) {
+		if (!Array.isArray(categories)) {
 			categories = [categories]
 		}
 		return this.categories.find(c => categories.includes(c.name))
@@ -509,8 +496,8 @@ class Client extends Eris.Client {
 	 * @param  {(string|string[])} categories - Category or list of these to search commands
 	 * @return {Command[]|null} - Array of {@link Command} (include subcommands)
 	 */
-	getCommandsFromCategories(categories){
-		if(!Array.isArray(categories)){
+	getCommandsFromCategories(categories) {
+		if (!Array.isArray(categories)) {
 			categories = [categories]
 		}
 		categories = categories.map(c => c.toLowerCase())
@@ -518,10 +505,10 @@ class Client extends Eris.Client {
 		return cmds.length > 0 ? cmds : null
 	}
 
-	checkRolesCanUse(msg,rolesName){
-		if(msg.channel.type !== 0) return
+	checkRolesCanUse(msg, rolesName) {
+		if (msg.channel.type !== 0) return
 		const member = msg.channel.guild.members.get(msg.author.id)
-		if(!member) return
+		if (!member) return
 		const roles = member.roles
 		if(typeof(rolesName) === 'string'){rolesName = [rolesName]}
 		rolesName = rolesName.map(r => r.toLowerCase())
@@ -530,56 +517,11 @@ class Client extends Eris.Client {
 		})
 	}
 
-	checkHasPermissions(msg,permissions){
-		if(msg.channel.type !== 0) return
+	checkHasPermissions(msg,permissions) {
+		if (msg.channel.type !== 0) return
 		const member = msg.channel.guild.members.get(msg.author.id)
 		if(!member) return
 		return !Object.keys(permissions).map(p => ({name : p, enable : permissions[p]})).some(p => member.permission.json[p.name] !== p.enable)
-	}
-
-	/**
-	 * Add a Event
-	 * @param {Event} event - Add a event
-	 */
-	addEvent(event){
-		if (!(event instanceof Event)) throw new TypeError(`Not a event ${event.name}`)
-		if(!event.enable){return logger.warn(`${event.name} from ${event.event} isn't enabled`)}
-		const events = Object.keys(this.events)
-		if(!events.includes(event.event)){return logger.error(`Event ${event.event} doesn't valid. In ${event.name}`)}
-		event.client = this
-		this.events[event.event].push(event)
-		logger.dev(`Event added: ${event.name} for ${event.event} event`)
-	}
-
-	/**
-	 * Add a Event from a file
-	 * @param {string} filename Path to file
-	 */
-	addEventFile(filename){
-		try {
-			const event = reload(filename)
-			event.filename = filename
-			this.addEvent(event)
-			// u.debug('Added command from', filename)
-		} catch (err) {
-			logger.error(err)
-			// u.warn('Command from', filename, "couldn't be loaded.\n", e)
-		}
-		return this
-	}
-
-	/**
-	 * Add events from a directory
-	 * @param {string} dirname - Directory path
-	 */
-	addEventDir (dirname) {
-		if (!dirname.endsWith('/')) dirname += '/'
-		const pattern = dirname + '*.js'
-		const filenames = glob.sync(pattern)
-		for (let filename of filenames) {
-			this.addEventFile(filename)
-		}
-		return this
 	}
 
 	// /**
@@ -629,7 +571,7 @@ module.exports = Client
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Event.html">Event</a></li><li><a href="Extension.html">Extension</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">1. Getting Started</a></li><li><a href="tutorial-2create-bot.html">2. Create a bot</a></li><li><a href="tutorial-3extensions.html">3. Extensions</a></li><li><a href="tutorial-4events.html">4. Events</a></li><li><a href="tutorial-5categories.html">5. Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Event.html">Event</a></li><li><a href="Extension.html">Extension</a></li><li><a href="Plugin.html">Plugin</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">1. Getting Started</a></li><li><a href="tutorial-2create-bot.html">2. Create a bot</a></li><li><a href="tutorial-3extensions.html">3. Extensions</a></li><li><a href="tutorial-4events.html">4. Events</a></li><li><a href="tutorial-5categories.html">5. Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

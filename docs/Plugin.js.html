@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: Event.js</title>
+    <title>JSDoc: Source: Plugin.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: Event.js</h1>
+    <h1 class="page-title">Source: Plugin.js</h1>
 
     
 
@@ -26,48 +26,36 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const eventNames = [
-	'messageCreate',
-	'messageReactionAdd',
-	'messageReactionRemove',
-	'guildCreate',
-	'guildDelete',
-	'guildMemberAdd',
-	'guildMemberRemove',
-	'ready']
-
-/** Class representing a Event (Eris) */
-class Event {
+            <pre class="prettyprint source linenums"><code>
+/** Representing a Extension */
+class Plugin {
 	/**
-	* Create a event.
+	* Extends Aghanim or Eris
 	* @class
-	* @param {string} name - The name id of the event.
-	* @param {string} event - The event name corresponding to Eris events.
-	* @param {object} options - The function to be called when the event is executed.
-	* @param {boolean} options.enable - Enable/disable event
-	* @param {function} process - The function to be called when the event is executed.
+	* @param {Client} client - Discord Client
+	* @param {string} tag - Name of Extension   [description]
+	* @param {object} object - Process of Extension
 	*/
-	constructor(name, event, options, process) {
-		this.name = name
-		// if (!this.name) throw new TypeError('Name is required')
-		this.event = event
-		this.process = process
-		if (!eventNames.includes(this.event)) throw new TypeError(`Event with name: "${this.event}" isn't correct`)
-		if (!this.event) throw new TypeError('Event is required')
-		if (!this.process) throw new TypeError('Process is required')
-		this.enable = options.enable || true
-	}
-	/**
-	* [eventNames description]
-	* @callback Event~process
-	* @this {Aghanim}
-	* @param
-	*/
+    constructor(client, options = {}) {
+        // if (!(client instanceof Client)) { throw new TypeError('Client is neccesary is neccessary') }
+        // if (!tag) { throw new TypeError('Plugin tag is neccessary') }
+        this.client = client
+        this.options = options
+        this.enable = options.enable !== undefined ? options.enable : true
+    }
+    ready() {
+
+    }
+	/***
+	 * [exports description]
+	 * @callback Extension~Process
+	 * @param bot - representing Aghanim.Client instance
+	 * @param Eris - representing Eris package. It extends using
+	 * Eris[structure].prototye[prop or method]
+	 */
 }
 
-
-module.exports = Event
-module.exports.eventNames = eventNames
+module.exports = Plugin
 </code></pre>
         </article>
     </section>

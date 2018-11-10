@@ -36,15 +36,14 @@ class Category {
    * @param {object} options.hide - Hide when use default help command
    * @param {object} options.restrict -
    */
-	constructor (name, help, options) {
-		if(!name){throw new Error('Name is required')}
+	constructor(name, help, options = {}) {
+		if (!name) { throw new Error('Name is required') }
 		this.name = name || ''
 		this.help = help || `Help for ${this.name} category`
-		options = options || {}
 		this.hide = options.hide || false
-		this.restrict = options.restrict || function(){return false}
-		for (var opt in options) {
-			if (!this.hasOwnProperty(opt)) {
+		this.restrict = options.restrict || function () { return false } /* eslint func-names : "off" */
+		for (const opt in options) { /* eslint no-restricted-syntax : "off" */
+			if (!this.hasOwnProperty(opt)) { /* eslint no-prototype-builtins : "off" */
 				this[opt] = options[opt]
 			}
 		}
@@ -52,29 +51,6 @@ class Category {
 }
 
 module.exports = Category
-
-// /**
-//  * @namespace MyNamespace.MySubNamespace
-//  */
-//
-//  (function (MyNamespace) {
-//      /**
-//       * Foo namespace
-//       * @namespace Foo
-//       * @memberOf MyNamespace.MySubNamespace
-//       */
-//      var Foo = {
-//          /**
-//           * Does something.
-//           * @memberOf MyNamespace.MySubNamespace.Foo
-//           * @param {object} someParam Some parameter.
-//           */
-//          doSomething: function (someParam) {
-//              // doing it
-//          }
-//      };
-//      MyNamespace.MySubNamespace.Foo = Foo;
-//  })(window.MyNamespace)
 </code></pre>
         </article>
     </section>
@@ -85,7 +61,7 @@ module.exports = Category
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Event.html">Event</a></li><li><a href="Extension.html">Extension</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">1. Getting Started</a></li><li><a href="tutorial-2create-bot.html">2. Create a bot</a></li><li><a href="tutorial-3extensions.html">3. Extensions</a></li><li><a href="tutorial-4events.html">4. Events</a></li><li><a href="tutorial-5categories.html">5. Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Event.html">Event</a></li><li><a href="Extension.html">Extension</a></li><li><a href="Plugin.html">Plugin</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">1. Getting Started</a></li><li><a href="tutorial-2create-bot.html">2. Create a bot</a></li><li><a href="tutorial-3extensions.html">3. Extensions</a></li><li><a href="tutorial-4events.html">4. Events</a></li><li><a href="tutorial-5categories.html">5. Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
