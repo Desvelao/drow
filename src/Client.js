@@ -3,7 +3,7 @@ const glob = require('glob')
 const Logger = require('another-logger')
 const Command = require('./Command')
 const Category = require('./Category')
-const Plugin = require('./Plugin')
+const Component = require('./Component')
 const reload = require('require-reload')(require)
 
 const DEFAULT_CATEGORY = 'Default'
@@ -57,8 +57,8 @@ class Client extends Eris.Client {
 		this.commands = []
 		/** @prop {Category[]} - Categories for commands. */
 		this.categories = []
-		/** @prop {Object<Plugin>} - Plugins. */
-		this.plugins = {}
+		/** @prop {Object<Component>} - Componnents. */
+		this.components = {}
 		/** @prop {Object} - Setup */
 		this.setup = {}
 
@@ -258,14 +258,14 @@ class Client extends Eris.Client {
 
 	_handleEvent(eventname) {
 		return (...args) => {
-			Object.keys(this.plugins)
-				.map((pluginName) => this.plugins[pluginName])
-				.filter((plugin) => plugin[eventname] && plugin.enable)
-				.forEach((plugin) => {
+			Object.keys(this.components)
+				.map((componentName) => this.components[componentName])
+				.filter((component) => component[eventname] && component.enable)
+				.forEach((component) => {
 					try {
-						plugin[eventname](...args)
+						component[eventname](...args)
 					} catch (err) {
-						logger.error(`${plugin.constructor.name} got an error. => ${err}`)
+						logger.error(`${component.constructor.name} got an error. => ${err}`)
 						this.emit(`aghanim:error`, err)
 					}
 				})
@@ -343,30 +343,30 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Add a Plugin
-	 * @param {Plugin} plugin Plugin {@link Plugin}
+	 * Add a Component
+	 * @param {Component} component Component {@link Component}
 	 */
-	addPlugin(plugin, options) {
-		if (!(plugin.prototype instanceof Plugin)) throw new TypeError(`Not a Plugin => ${plugin}`)
-		// if (plugin.__proto__ !== Plugin) throw new TypeError(`Not a Plugin => ${plugin}`)
-		if (this.plugins[plugin.name]){ throw new Error(`Plugin exists => ${plugin.name}`)}
+	addComponent(component, options) {
+		if (!(component.prototype instanceof Component)) throw new TypeError(`Not a Component => ${component}`)
+		// if (component.__proto__ !== Component) throw new TypeError(`Not a Component => ${component}`)
+		if (this.components[component.name]){ throw new Error(`Component exists => ${component.name}`)}
 		try {
-			this.plugins[plugin.name] = new plugin(this,options)
-			logger.dev(`Plugin Added: ${plugin.name}`)
+			this.components[component.name] = new component(this,options)
+			logger.dev(`Component Added: ${component.name}`)
 		} catch (err) {
 			logger.error(err)
 		}
 	}
 
 	/**
-	 * Add plugin from file
+	 * Add component from file
 	 * @param {string} filename Path to file
 	 */
-	addPluginFile(filename) {
+	addComponentFile(filename) {
 		try {
-			const plugin = reload(filename)
-			plugin.filename = filename
-			this.addPlugin(plugin)
+			const component = reload(filename)
+			component.filename = filename
+			this.addComponent(component)
 		} catch (err) {
 			logger.error(err)
 		}
@@ -374,15 +374,15 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Add plugins from a directory
-	 * @param {string} dirname Path to load plugins
+	 * Add components from a directory
+	 * @param {string} dirname Path to load components
 	 */
-	addPluginDir(dirname) {
+	addComponentDir(dirname) {
 		if (!dirname.endsWith('/')) dirname += '/'
 		const pattern = `${dirname}*.js`
 		const filenames = glob.sync(pattern)
 		for (let filename of filenames) {
-			this.addPluginFile(filename)
+			this.addComponentFile(filename)
 		}
 		return this
 	}

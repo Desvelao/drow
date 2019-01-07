@@ -3,7 +3,7 @@ class Category {
 	/**
    * Create a category.
    * @param {string} name - The name of category.
-   * @param {string} string - Help description
+   * @param {string} help - Help description
    * @param {object} options - Help description
    * @param {object} options.hide - Hide when use default help command
    * @param {object} options.restrict -

@@ -31,7 +31,7 @@ $ npm install --save Desvelao/aghanim#dev # npm
 ```js
 //index.js
 const Aghanim  = require('aghanim')
-const { Command, Event }  = require('aghanim')
+const { Command, Component }  = require('aghanim')
 
 const bot = new Aghanim(
 	'your_bot_token', // Token used to auth your bot account
