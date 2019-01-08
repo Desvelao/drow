@@ -1,6 +1,6 @@
 
-/** Representing a Extension */
-class Plugin {
+/** Representing a Component */
+class Component {
 	/**
 	* Extends Client
 	* @class
@@ -15,4 +15,4 @@ class Plugin {
 	ready() { } /* eslint class-methods-use-this : "off" */
 }
 
-module.exports = Plugin
+module.exports = Component

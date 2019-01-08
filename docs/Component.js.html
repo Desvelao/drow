@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: Category.js</title>
+    <title>JSDoc: Source: Component.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: Category.js</h1>
+    <h1 class="page-title">Source: Component.js</h1>
 
     
 
@@ -26,31 +26,24 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** Class representing a category of commands. */
-class Category {
+            <pre class="prettyprint source linenums"><code>
+/** Representing a Component */
+class Component {
 	/**
-   * Create a category.
-   * @param {string} name - The name of category.
-   * @param {string} help - Help description
-   * @param {object} options - Help description
-   * @param {object} options.hide - Hide when use default help command
-   * @param {object} options.restrict -
-   */
-	constructor(name, help, options = {}) {
-		if (!name) { throw new Error('Name is required') }
-		this.name = name || ''
-		this.help = help || `Help for ${this.name} category`
-		this.hide = options.hide || false
-		this.restrict = options.restrict || function () { return false } /* eslint func-names : "off" */
-		for (const opt in options) { /* eslint no-restricted-syntax : "off" */
-			if (!this.hasOwnProperty(opt)) { /* eslint no-prototype-builtins : "off" */
-				this[opt] = options[opt]
-			}
-		}
+	* Extends Client
+	* @class
+	* @param {Client} client - Discord Client
+	* @param {object} options - Options
+	*/
+	constructor(client, options = {}) {
+		this.client = client
+		this.options = options
+		this.enable = options.enable !== undefined ? options.enable : true
 	}
+	ready() { } /* eslint class-methods-use-this : "off" */
 }
 
-module.exports = Category
+module.exports = Component
 </code></pre>
         </article>
     </section>

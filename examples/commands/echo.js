@@ -5,5 +5,5 @@ module.exports = new Command('echo',{
   ownerOnly : true, hide : true},
   function(msg, args, command){
     // let self = this //this representing Aghanim.Client
-    msg.channel.createMessage(args.from(1))
+    return msg.channel.createMessage(args.from(1))
   })

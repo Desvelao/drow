@@ -17,11 +17,9 @@ $ npm install --save Desvelao/aghanim#dev # npm
 
 ### Steps
 1. [Create](./create-bot.html) a bot instance
-2. *(optional)* Load [Custom Extensions](./custom-extensions.html)
-3. *(optional)* Set custom events to Eris events
-3. Define your Categories
-4. Add Commands.
-5. *(optional)* Add subcommands
+2. Define your [Categories](tutorial-categories.html)
+4. Add [Commands/Subcommands](tutorial-commands.html)
+5. Add [Components](tutorial-components.html)
 6. Connect bot
 
 ### Fast Example
@@ -29,7 +27,7 @@ $ npm install --save Desvelao/aghanim#dev # npm
 ```js
 //index.js
 const Aghanim = require('aghanim')
-const { Command, Event }  = require('aghanim')
+const { Command, Component }  = require('aghanim')
 
 const bot = new Aghanim(
 	'your_bot_token', // Token used to auth your bot account
@@ -49,17 +47,23 @@ const pingCommand = new Command('ping', {
 
 bot.addCommand(pingCommand)
 
-// Event: executed for no commands actions. Same Eris.
-const simpleEvent = new Event(
-  'simpleEvent', // Event's name
-  'messageCreate', // Event's event (same ErisJS)
-  function(msg,args,command){
-		//this = Aghanim.Client
-	  if(msg.channel.type === 0){console.log('Message received in a guild!')}
-	})
+// Component:
+class MyComponent extends Component{
+	constructor(client, options) {
+		super(client) // this.client is Aghanim Client instance. You can use in other methods
+	}
+	ready(){
+		console.log('My component is ready')
+	}
+	messageCreate(msg, args, command){
+		console.log(`Message: ${msg.content}`)
+		// this.client is Aghanim Client instance. You can use it here
+	}
+}
 
-bot.addEvent(simpleEvent)
+bot.addComponent(MyComponent)
 
+// Bot connent
 bot.connect()
 ```
 

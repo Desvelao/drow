@@ -239,18 +239,14 @@ class Client extends Eris.Client {
 				 * Command Error Event
 				 * @event Client#aghanim:command:error
 				 * @param {object} err - Error
+				 * @param {object} msg - Message Object
+				 * @param {object} args - Error
 				 * @param {Command} command - Command that fired the error
 				 */
 				this.emit('aghanim:command:error', err, msg, args, command)
 			})
 		}catch(err){
 			logger.error('Error Command TryCatched =>', err)
-			/**
-			 * Command Error Event
-			 * @event Client#aghanim:command:error
-			 * @param {object} err - Error
-			 * @param {Command} command - Command that fired the error
-			 */
 			this.emit('aghanim:command:error', err, msg, args, command)
 		}
 
@@ -266,6 +262,11 @@ class Client extends Eris.Client {
 						component[eventname](...args)
 					} catch (err) {
 						logger.error(`${component.constructor.name} got an error. => ${err}`)
+						/**
+						 * Command Error Event
+						 * @event Client#aghanim:error
+						 * @param {object} err - Error
+						 */
 						this.emit(`aghanim:error`, err)
 					}
 				})

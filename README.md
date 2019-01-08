@@ -51,17 +51,23 @@ const pingCommand = new Command('ping', {
 
 bot.addCommand(pingCommand)
 
-// Event: executed for no commands actions. Same Eris.
-const simpleEvent = new Event(
-  'simpleEvent', // Event's name
-  'messageCreate', // Event's event (same ErisJS)
-  function(msg,args,command){
-		//this = Aghanim.Client
-	  if(msg.channel.type === 0){console.log('Message received from a guild!')}
-	})
+// Component:
+class MyComponent extends Component{
+	constructor(client, options) {
+		super(client) // this.client is Aghanim Client instance. You can use in other methods
+	}
+	ready(){
+		console.log('My component is ready')
+	}
+	messageCreate(msg, args, command){
+		console.log(`Message: ${msg.content}`)
+		// this.client is Aghanim Client instance. You can use it here
+	}
+}
 
-bot.addEvent(simpleEvent)
+bot.addComponent(MyComponent)
 
+// Bot connent
 bot.connect()
 ```
 

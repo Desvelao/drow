@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Tutorial: Create Categories</title>
+    <title>JSDoc: Tutorial: Create Commands/Subcommands</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,21 +17,46 @@
 
 <div id="main">
 
-    <h1 class="page-title">Tutorial: Create Categories</h1>
+    <h1 class="page-title">Tutorial: Create Commands/Subcommands</h1>
 
     <section>
 
 <header>
     
 
-    <h2>Create Categories</h2>
+    <h2>Create Commands/Subcommands</h2>
 </header>
 
 <article>
-    <p>You can define your category methods. It should do before you add commands to your bot.</p>
-<h3>Add a category</h3><p>Add a category:</p>
-<pre class="prettyprint source lang-js"><code>    //bot defined
-    bot.addCategory('Fun','List of fun commands') // Add a category with name &quot;Fun&quot;</code></pre>
+    <h3>Create a Command</h3><pre class="prettyprint source lang-js"><code>//ping.js
+const { Command } = require('aghanim')
+
+module.exports = new Command('ping', {
+  category : 'Fun', help : 'Get Pong!', args : ''},
+  function (msg,args,cmd) { // This function should be a function and no an arraow function to keep this = bot instance
+    //this = Aghanim.Client
+      msg.channel.createMessage('Pong!')
+})</code></pre><h3>Add your command to your bot</h3><pre class="prettyprint source lang-js"><code>    //index.js
+    //bot defined...
+    const ping_command = require('my_component')
+    bot.addCommmand(ping_command)
+
+    //You can import the file directly using addCommandFile method
+    bot.addCommandFile(__dirname + 'ping.js')
+
+    //Or you can import a directory of commands with addCommandDir method
+    bot.addCommandDir(__dirname + 'path/to/commands')</code></pre><h3>Create a Subcommand</h3><pre class="prettyprint source lang-js"><code>//pong.js
+const { Command } = require('aghanim')
+
+module.exports = new Command('pong', {
+  subcommandFrom : 'ping',
+  category : 'Fun', help : 'Get Pong!', args : ''},
+  function (msg,args,cmd) {
+        //this = Aghanim.Client
+      msg.channel.createMessage('Pong!')
+})
+
+// This command will be fired with `[botPrefix]ping pong`</code></pre><p>You need add it to bot after <code>ping</code> command.</p>
 </article>
 
 </section>

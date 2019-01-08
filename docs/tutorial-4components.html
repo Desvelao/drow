@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Tutorial: Getting Started</title>
+    <title>JSDoc: Tutorial: Create Components</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,49 +17,25 @@
 
 <div id="main">
 
-    <h1 class="page-title">Tutorial: Getting Started</h1>
+    <h1 class="page-title">Tutorial: Create Components</h1>
 
     <section>
 
 <header>
     
 
-    <h2>Getting Started</h2>
+    <h2>Create Components</h2>
 </header>
 
 <article>
-    <h2>Aghanim</h2><p><strong>Aghanim</strong> is a Command Client created by <a href="https://desvelao.github.io/profile/">Desvelao^^</a> for create bots with <a href="https://github.com/abalabahaha/eris">Eris</a> in NodeJS based on <a href="https://geo1088.github.io/yuuko">Yuuko</a></p>
-<p><strong>Version</strong>: <code>v0.0.1</code></p>
-<h3>Using the package</h3><p><strong>Aghanim's core</strong> is only available at <a href="https://github.com/Desvelao/aghanim">Github repository</a>. It extends <a href="https://github.com/abalabahaha/eris">Eris</a> and is basically an alternative to its CommandClient class.</p>
-<h3>Installation</h3><pre class="prettyprint source lang-bash"><code>$ yarn add Desvelao/aghanim#dev # yarn
-$ npm install --save Desvelao/aghanim#dev # npm</code></pre><h3>Steps</h3><ol>
-<li><a href="./create-bot.html">Create</a> a bot instance</li>
-<li>Define your <a href="tutorial-categories.html">Categories</a></li>
-<li>Add <a href="tutorial-commands.html">Commands/Subcommands</a></li>
-<li>Add <a href="tutorial-components.html">Components</a></li>
-<li>Connect bot</li>
-</ol>
-<h3>Fast Example</h3><pre class="prettyprint source lang-js"><code>//index.js
-const Aghanim = require('aghanim')
-const { Command, Component }  = require('aghanim')
-
-const bot = new Aghanim(
-    'your_bot_token', // Token used to auth your bot account
-    {
-          prefix: 'a!', // Prefix used to trigger commands
-    }
-)
-
-bot.addCategory('Fun','Fun commands')
-
-const pingCommand = new Command('ping', {
-  category : 'Fun', help : 'Get Pong!', args : ''},
-  function (msg,args,cmd) {
-        //this = Aghanim.Client
-      msg.channel.createMessage('Pong!')
-})
-
-bot.addCommand(pingCommand)
+    <p>You can extends your bot methods/funcionality or Eris structures throgh Aghanim Extension.</p>
+<h3>At start: same time you create the bot</h3><p>Add in a array for <code>options.extensions</code>, the predefined extensions to load. See <a href="link">Aghanim Extensions</a></p>
+<pre class="prettyprint source lang-js"><code>    const bot = new Aghanim({
+        prefix : 'a!',
+        extensions : ['eris/message','eris/guild'] // load Message and Guild extensions from extensions/eris folder
+    })</code></pre><h3>Custom extensions: after instantiate your bot</h3><p>You can create Components:</p>
+<pre class="prettyprint source lang-js"><code>//my_component.js
+const { Component } = require('aghanim')
 
 // Component:
 class MyComponent extends Component{
@@ -73,12 +49,16 @@ class MyComponent extends Component{
         console.log(`Message: ${msg.content}`)
         // this.client is Aghanim Client instance. You can use it here
     }
-}
+}</code></pre><h3>Add your custom component to your bot</h3><pre class="prettyprint source lang-js"><code>    //index.js
+    //bot defined...
+    const my_custom_extension = require('my_component')
+    bot.addComponent(MyComponent)
 
-bot.addComponent(MyComponent)
+    //You can import the file directly using addComponentFile method
+    bot.addComponentFile(__dirname + 'my_component.js')
 
-// Bot connent
-bot.connect()</code></pre><pre class="prettyprint source lang-bash"><code>$ node index.js</code></pre>
+    //Or you can import a directory of components with addComponentDir method
+    bot.addComponentDir(__dirname + 'path/to/components_folder')</code></pre>
 </article>
 
 </section>

@@ -2,7 +2,7 @@ You can define your category methods. It should do before you add commands to yo
 
 ### Add a category
 
-Add in a array for `options.extensions`, the predefined extensions to load. See [Aghanim Extensions](link)
+Add a category:
 
 ```js
 	//bot defined

@@ -57,7 +57,7 @@
 <h3>Installation</h3><pre class="prettyprint source lang-bash"><code>$ yarn add Desvelao/aghanim#dev # yarn
 $ npm install --save Desvelao/aghanim#dev # npm</code></pre><h3>Usage</h3><pre class="prettyprint source lang-js"><code>//index.js
 const Aghanim  = require('aghanim')
-const { Command, Event }  = require('aghanim')
+const { Command, Component }  = require('aghanim')
 
 const bot = new Aghanim(
     'your_bot_token', // Token used to auth your bot account
@@ -77,17 +77,23 @@ const pingCommand = new Command('ping', {
 
 bot.addCommand(pingCommand)
 
-// Event: executed for no commands actions. Same Eris.
-const simpleEvent = new Event(
-  'simpleEvent', // Event's name
-  'messageCreate', // Event's event (same ErisJS)
-  function(msg,args,command){
-        //this = Aghanim.Client
-      if(msg.channel.type === 0){console.log('Message received from a guild!')}
-    })
+// Component:
+class MyComponent extends Component{
+    constructor(client, options) {
+        super(client) // this.client is Aghanim Client instance. You can use in other methods
+    }
+    ready(){
+        console.log('My component is ready')
+    }
+    messageCreate(msg, args, command){
+        console.log(`Message: ${msg.content}`)
+        // this.client is Aghanim Client instance. You can use it here
+    }
+}
 
-bot.addEvent(simpleEvent)
+bot.addComponent(MyComponent)
 
+// Bot connent
 bot.connect()</code></pre><pre class="prettyprint source lang-bash"><code>$ node index.js</code></pre></article>
     </section>
 
@@ -99,7 +105,7 @@ bot.connect()</code></pre><pre class="prettyprint source lang-bash"><code>$ node
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Event.html">Event</a></li><li><a href="Extension.html">Extension</a></li><li><a href="Plugin.html">Plugin</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">1. Getting Started</a></li><li><a href="tutorial-2create-bot.html">2. Create a bot</a></li><li><a href="tutorial-3extensions.html">3. Extensions</a></li><li><a href="tutorial-4events.html">4. Events</a></li><li><a href="tutorial-5categories.html">5. Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

@@ -31,7 +31,7 @@ const glob = require('glob')
 const Logger = require('another-logger')
 const Command = require('./Command')
 const Category = require('./Category')
-const Plugin = require('./Plugin')
+const Component = require('./Component')
 const reload = require('require-reload')(require)
 
 const DEFAULT_CATEGORY = 'Default'
@@ -67,10 +67,10 @@ class Client extends Eris.Client {
 	*/
 	constructor(token, options = {}) {
 		// Attempt to load options from aghanim.config.js(on) file
-		try{
-			options = require(`${process.cwd()}/aghanim.config`)
+		try {
+			options = require(`${process.cwd()}/aghanim.config`) /* eslint import/no-dynamic-require : "off", global-require : "off", no-param-reassign : "off" */
 			logger.info('Found Aghanim default config file: aghanim.config.js(on)')
-		}catch(err){
+		} catch (err) {
 			logger.info('Not found Aghanim default config file: aghanim.config.js(on)')
 		}
 		super(token, options)
@@ -85,8 +85,8 @@ class Client extends Eris.Client {
 		this.commands = []
 		/** @prop {Category[]} - Categories for commands. */
 		this.categories = []
-		/** @prop {Object&lt;Plugin>} - Plugins. */
-		this.plugins = {}
+		/** @prop {Object&lt;Component>} - Componnents. */
+		this.components = {}
 		/** @prop {Object} - Setup */
 		this.setup = {}
 
@@ -102,7 +102,8 @@ class Client extends Eris.Client {
 		this.ignoreBots = options.ignoreBots == null ? true : options.ignoreBots
 
 		this.on('ready', () => {
-			if(this._ready){return}else{this._ready = true}
+			if (this._ready) { return }
+			this._ready = true
 			/**
 			 * @prop {RegExp} - The RegExp used to tell whether or not a message starts
 			 *     with a mention of the bot. Only present after the 'ready' event.
@@ -134,7 +135,7 @@ class Client extends Eris.Client {
 				 * @prop {string} avatar - Owner avatar
 				 * @prop {ClientOwner~send} send - Send a message to Owner
 				 */
-				this.owner = Object.assign({},this.app.owner)
+				this.owner = Object.assign({}, this.app.owner)
 				this.getDMChannel(this.owner.id).then((channel) => {
 					/**
 					 * Function to send messages to owner
@@ -142,13 +143,14 @@ class Client extends Eris.Client {
 					 * @param  {string|object} content - Message content to send
 					 * @param  {object} file - Message content to send
 					 */
-					this.owner.send = function (content, file) { channel.createMessage(content, file) }
+					this.owner.send = function ownerSend(content, file) { channel.createMessage(content, file) }
 				})
 
 				this._handleEvent('ready')()
 			})		
 		}).on('error', (err) => {
 			logger.error(err)
+			// this.emit('aghanim:error')
 		}).on('messageCreate', this.handleMessage)
 			.on('messageReactionAdd', this._handleEvent('messageReactionAdd'))
 			.on('messageReactionRemove', this._handleEvent('messageReactionRemove'))
@@ -249,48 +251,54 @@ class Client extends Eris.Client {
 				}
 			}
 		}
-
-		Promise.resolve(command.process.call(this, msg, args, command)).then((val) => {
-			// logger.log('Val Promise',val);
-			if (command.cooldown) {
-				command.setCooldown(msg.author.id)
-			}
-			if (command.cooldown || command.await) {
-				this._handleCommandAwaitSuccess(command, val)
-			}
-		}).catch(err => this._handleCommandAwaitFail(command, err))
+		
+		try{
+			Promise.resolve(command.process.call(this, msg, args, command)).then((val) => {
+				// logger.log('Val Promise',val);
+				if (command.cooldown) {
+					command.setCooldown(msg.author.id)
+				}
+				if (command.cooldown || command.await) {
+					if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
+				}
+			}).catch(err => {
+				logger.warn(`&lt;${command.name}> returned a failed promise: ${err}`)
+				/**
+				 * Command Error Event
+				 * @event Client#aghanim:command:error
+				 * @param {object} err - Error
+				 * @param {object} msg - Message Object
+				 * @param {object} args - Error
+				 * @param {Command} command - Command that fired the error
+				 */
+				this.emit('aghanim:command:error', err, msg, args, command)
+			})
+		}catch(err){
+			logger.error('Error Command TryCatched =>', err)
+			this.emit('aghanim:command:error', err, msg, args, command)
+		}
 
 	}
 
 	_handleEvent(eventname) {
 		return (...args) => {
-			Object.keys(this.plugins)
-				.map((pluginName) => this.plugins[pluginName])
-				.filter((plugin) => plugin[eventname] &amp;&amp; plugin.enable)
-				.forEach((plugin) => {
+			Object.keys(this.components)
+				.map((componentName) => this.components[componentName])
+				.filter((component) => component[eventname] &amp;&amp; component.enable)
+				.forEach((component) => {
 					try {
-						plugin[eventname](...args)
+						component[eventname](...args)
 					} catch (err) {
-						logger.error(`${plugin.constructor.name} got an error. => ${err.stack}`)
+						logger.error(`${component.constructor.name} got an error. => ${err}`)
+						/**
+						 * Command Error Event
+						 * @event Client#aghanim:error
+						 * @param {object} err - Error
+						 */
 						this.emit(`aghanim:error`, err)
 					}
 				})
 		}
-	}
-
-	_handleCommandAwaitSuccess(command, val) {
-		if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
-	}
-
-	_handleCommandAwaitFail(command,err) {
-		logger.warn(`&lt;${command.name}> returned a failed promise: ${err}`)
-		/**
-		 * Command Error Event
-		 * @event Client#aghanim:command:error
-		 * @param {object} err - Error
-		 * @param {Command} command - Command that fired the error
-		 */
-		this.emit('aghanim:command:error', err, command)
 	}
 
 	/**
@@ -364,29 +372,30 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Add a Plugin
-	 * @param {Plugin} plugin Plugin {@link Plugin}
+	 * Add a Component
+	 * @param {Component} component Component {@link Component}
 	 */
-	addPlugin(plugin, options) {
-		if (plugin.__proto__ !== Plugin) throw new TypeError(`Not a Plugin => ${plugin}`)
-		if (this.plugins[plugin.name]){ throw new Error(`Plugin exists => ${plugin.name}`)}
+	addComponent(component, options) {
+		if (!(component.prototype instanceof Component)) throw new TypeError(`Not a Component => ${component}`)
+		// if (component.__proto__ !== Component) throw new TypeError(`Not a Component => ${component}`)
+		if (this.components[component.name]){ throw new Error(`Component exists => ${component.name}`)}
 		try {
-			this.plugins[plugin.name] = new plugin(this,options)
-			logger.dev(`Plugin Added: ${plugin.name}`)
+			this.components[component.name] = new component(this,options)
+			logger.dev(`Component Added: ${component.name}`)
 		} catch (err) {
 			logger.error(err)
 		}
 	}
 
 	/**
-	 * Add plugin from file
+	 * Add component from file
 	 * @param {string} filename Path to file
 	 */
-	addPluginFile(filename) {
+	addComponentFile(filename) {
 		try {
-			const plugin = reload(filename)
-			plugin.filename = filename
-			this.addPlugin(plugin)
+			const component = reload(filename)
+			component.filename = filename
+			this.addComponent(component)
 		} catch (err) {
 			logger.error(err)
 		}
@@ -394,15 +403,15 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Add plugins from a directory
-	 * @param {string} dirname Path to load plugins
+	 * Add components from a directory
+	 * @param {string} dirname Path to load components
 	 */
-	addPluginDir(dirname) {
+	addComponentDir(dirname) {
 		if (!dirname.endsWith('/')) dirname += '/'
 		const pattern = `${dirname}*.js`
 		const filenames = glob.sync(pattern)
 		for (let filename of filenames) {
-			this.addPluginFile(filename)
+			this.addComponentFile(filename)
 		}
 		return this
 	}
@@ -571,7 +580,7 @@ module.exports = Client
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Event.html">Event</a></li><li><a href="Extension.html">Extension</a></li><li><a href="Plugin.html">Plugin</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">1. Getting Started</a></li><li><a href="tutorial-2create-bot.html">2. Create a bot</a></li><li><a href="tutorial-3extensions.html">3. Extensions</a></li><li><a href="tutorial-4events.html">4. Events</a></li><li><a href="tutorial-5categories.html">5. Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
