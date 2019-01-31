@@ -4,7 +4,7 @@ class Component {
 	/**
 	* Extends Client
 	* @class
-	* @param {Client} client - Discord Client
+	* @param {Client} client - Aghanim Client
 	* @param {object} options - Options
 	*/
 	constructor(client, options = {}) {

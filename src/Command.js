@@ -103,7 +103,7 @@ class Command {
     * @param {Command} command - The name or alias used to call the command in
     *     the message. Will be one of the values of `this.names`.
     */
-
+	async process(msg, args, command) {}
 	/**
 	* @callback Command~check
 	* A function to be called before execute a coomand.

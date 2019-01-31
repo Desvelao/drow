@@ -1,16 +1,5 @@
 You can extends your bot methods/funcionality or Eris structures throgh Aghanim Extension.
 
-### At start: same time you create the bot
-
-Add in a array for `options.extensions`, the predefined extensions to load. See [Aghanim Extensions](link)
-
-```js
-	const bot = new Aghanim({
-		prefix : 'a!',
-		extensions : ['eris/message','eris/guild'] // load Message and Guild extensions from extensions/eris folder
-	})
-```
-
 ### Custom extensions: after instantiate your bot
 
 You can create Components:
@@ -32,13 +21,15 @@ class MyComponent extends Component{
 		// this.client is Aghanim Client instance. You can use it here
 	}
 }
+
+module.exports = MyComponent
 ```
 
 ### Add your custom component to your bot
 ```js
 	//index.js
 	//bot defined...
-	const my_custom_extension = require('my_component')
+	const MyComponent = require('my_component')
 	bot.addComponent(MyComponent)
 
 	//You can import the file directly using addComponentFile method

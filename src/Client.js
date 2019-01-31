@@ -32,7 +32,9 @@ class Client extends Eris.Client {
 	* @param {boolean} [options.ignoreBots = true] - Whether or not the bot ignoresBots. Default: true
 	* @param {number} options.logLevel - The minimum message level for logged events in the console.
 	* @param {string} [options.helpMessage = '**Help**'] - Title for default command help Message
-	* @param {string} [options.helpMessageAfterCategories = '**Note**: Use \`${options.prefix}help <category>\` to see those commands'] - Message after categories in default command help message are shown
+	* @param {string} [options.helpMessageAfterCategories = '**Note**: Use
+	* \`${options.prefix}help <category>\` to see those commands'] -
+	* Message after categories in default command help message are shown
 	* @param {boolean} [options.helpDM = true] - Active direct message to default command help
 	* @param {boolean} [options.helpEnable = true] - Enable/disable default command help
 	* @param {boolean} [options.devLogs = false] - Enable/disable default command help
@@ -73,7 +75,7 @@ class Client extends Eris.Client {
 		*sent from bot accounts. Defaults to true. */
 		this.ignoreBots = options.ignoreBots == null ? true : options.ignoreBots
 
-		this.on('ready', () => {
+		this.once('ready', () => {
 			if (this._ready) { return }
 			this._ready = true
 			/**
@@ -122,7 +124,12 @@ class Client extends Eris.Client {
 			})		
 		}).on('error', (err) => {
 			logger.error(err)
-			// this.emit('aghanim:error')
+			/**
+			 * Command Error Event
+			 * @event Client#aghanim:error
+			 * @param {object} err - Error
+			 */
+			this.emit('aghanim:error', err)
 		}).on('messageCreate', this.handleMessage)
 			.on('messageReactionAdd', this._handleEvent('messageReactionAdd'))
 			.on('messageReactionRemove', this._handleEvent('messageReactionRemove'))
@@ -168,7 +175,7 @@ class Client extends Eris.Client {
 	 * Given a message, see if there is a command and process it if so.
 	 * @param {Object} msg - The message object recieved from Eris.
 	 */
-	handleMessage(msg) {
+	async handleMessage(msg) {
 		this._handleEvent('messageCreate')(msg)
 
 		if (this.ignoreBots && msg.author.bot) return
@@ -201,6 +208,8 @@ class Client extends Eris.Client {
 		args.until = arg => this.defaultPrefix + args.slice(0, arg).join(' ')
 		args.after = args.from(1)
 
+		this.commandArgsMiddleware(args, msg)
+
 		const command = this.commandForName(commandName, subCommandName)
 		if (!command) return
 		if (!command.enable) return
@@ -222,30 +231,45 @@ class Client extends Eris.Client {
 					return
 				}
 			}
-		}
+		}	
 		
-		try{
-			Promise.resolve(command.process.call(this, msg, args, command)).then((val) => {
-				// logger.log('Val Promise',val);
-				if (command.cooldown) {
-					command.setCooldown(msg.author.id)
-				}
-				if (command.cooldown || command.await) {
-					if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
-				}
-			}).catch(err => {
-				logger.warn(`<${command.name}> returned a failed promise: ${err}`)
-				/**
-				 * Command Error Event
-				 * @event Client#aghanim:command:error
-				 * @param {object} err - Error
-				 * @param {object} msg - Message Object
-				 * @param {object} args - Error
-				 * @param {Command} command - Command that fired the error
-				 */
-				this.emit('aghanim:command:error', err, msg, args, command)
-			})
-		}catch(err){
+		try {
+			const val = await command.process.call(this, msg, args, command)
+			if (command.cooldown) {
+				command.setCooldown(msg.author.id)
+			}
+			if (command.cooldown || command.await) {
+				if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
+			}
+			// Promise.resolve(command.process.call(this, msg, args, command)).then((val) => {
+			// 	// logger.log('Val Promise',val);
+			// 	if (command.cooldown) {
+			// 		command.setCooldown(msg.author.id)
+			// 	}
+			// 	if (command.cooldown || command.await) {
+			// 		if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
+			// 	}
+			// }).catch((err) => {
+			// 	logger.warn(`<${command.name}> returned a failed promise: ${err}`)
+			// 	/**
+			// 	 * Command Error Event
+			// 	 * @event Client#aghanim:command:error
+			// 	 * @param {object} err - Error
+			// 	 * @param {object} msg - Message Object
+			// 	 * @param {object} args - Error
+			// 	 * @param {Command} command - Command that fired the error
+			// 	 */
+			// 	this.emit('aghanim:command:error', err, msg, args, command)
+			// })
+		}catch(err) {
+			/**
+			 * Command Error Event
+			 * @event Client#aghanim:command:error
+			 * @param {object} err - Error
+			 * @param {object} msg - Eris Message object
+			 * @param {object} args - Args object
+			 * @param {Component} command - Command
+			 */
 			logger.error('Error Command TryCatched =>', err)
 			this.emit('aghanim:command:error', err, msg, args, command)
 		}
@@ -257,22 +281,31 @@ class Client extends Eris.Client {
 			Object.keys(this.components)
 				.map((componentName) => this.components[componentName])
 				.filter((component) => component[eventname] && component.enable)
-				.forEach((component) => {
+				.forEach(async (component) => {
 					try {
-						component[eventname](...args)
+						await component[eventname](...args)
 					} catch (err) {
 						logger.error(`${component.constructor.name} got an error. => ${err}`)
 						/**
 						 * Command Error Event
-						 * @event Client#aghanim:error
+						 * @event Client#aghanim:component:error
 						 * @param {object} err - Error
+						 * @param {Component} component - Component
 						 */
-						this.emit(`aghanim:error`, err)
+						this.emit(`aghanim:component:error`, err, component)
 					}
 				})
 		}
 	}
 
+	/**
+	 * Apply a middleware to args argument to extend it.
+	 * @param {args} args - Args object.
+	 * @param {msg} msg - Eris Message.
+	 */
+	commandArgsMiddleware(args, msg) {
+
+	}
 	/**
 	 * Register a command to the client.
 	 * @param {Command} command - The command to add to the bot.
@@ -308,9 +341,7 @@ class Client extends Eris.Client {
 		if (!dirname.endsWith('/')) dirname += '/'
 		const pattern = `${dirname}*.js`
 		const filenames = glob.sync(pattern)
-		for (const filename of filenames) {
-			this.addCommandFile(filename)
-		}
+		filenames.forEach(filename => this.addCommandFile(filename))
 		return this
 	}
 
@@ -352,8 +383,13 @@ class Client extends Eris.Client {
 		// if (component.__proto__ !== Component) throw new TypeError(`Not a Component => ${component}`)
 		if (this.components[component.name]){ throw new Error(`Component exists => ${component.name}`)}
 		try {
-			this.components[component.name] = new component(this,options)
-			logger.dev(`Component Added: ${component.name}`)
+			const instanceComponent = new component(this,options)
+			if (instanceComponent.enable){
+				this.components[component.name] = instanceComponent
+				logger.dev(`Component Added: ${component.name}`)
+			}else{
+				logger.warn(`Component Disabled: ${component.name}`)
+			}
 		} catch (err) {
 			logger.error(err)
 		}
@@ -382,9 +418,7 @@ class Client extends Eris.Client {
 		if (!dirname.endsWith('/')) dirname += '/'
 		const pattern = `${dirname}*.js`
 		const filenames = glob.sync(pattern)
-		for (let filename of filenames) {
-			this.addComponentFile(filename)
-		}
+		filenames.forEach(filename => this.addComponentFile(filename))
 		return this
 	}
 	// addCommandCategory(dirname){
@@ -415,7 +449,7 @@ class Client extends Eris.Client {
 	 * @param {string} subcommand - The name of the subcommand to look for.
 	 * @returns {Command|null}
 	 */
-	commandForName(command,subcommand) {
+	commandForName(command, subcommand) {
 		const cmd = this.commands.find(c => [c.name, ...c.aliases].includes(command))
 		if (!cmd) return
 		if (subcommand) {

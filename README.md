@@ -5,11 +5,9 @@
 __Author__ : [Desvelao^^](https://desvelao.github.io/profile/)  __Version__: `v0.0.1`
 
 ## Features
-- Support for Subcommands (Command should be exists)
+- Support for Subcommands (Command should be exist)
 - Commands with user cooldown
-- Load commands, events and extensions from directories or files directly.
-- Can extends Eris or your bot client with Extensions
-- Can add custom functionality to some Eris events. You always can listen the event.
+- Add Components that can fire at some Eris events or add custom functionality to your bot
 
 ## Using the bot
 

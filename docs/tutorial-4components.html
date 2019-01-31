@@ -29,11 +29,7 @@
 
 <article>
     <p>You can extends your bot methods/funcionality or Eris structures throgh Aghanim Extension.</p>
-<h3>At start: same time you create the bot</h3><p>Add in a array for <code>options.extensions</code>, the predefined extensions to load. See <a href="link">Aghanim Extensions</a></p>
-<pre class="prettyprint source lang-js"><code>    const bot = new Aghanim({
-        prefix : 'a!',
-        extensions : ['eris/message','eris/guild'] // load Message and Guild extensions from extensions/eris folder
-    })</code></pre><h3>Custom extensions: after instantiate your bot</h3><p>You can create Components:</p>
+<h3>Custom extensions: after instantiate your bot</h3><p>You can create Components:</p>
 <pre class="prettyprint source lang-js"><code>//my_component.js
 const { Component } = require('aghanim')
 
@@ -49,9 +45,11 @@ class MyComponent extends Component{
         console.log(`Message: ${msg.content}`)
         // this.client is Aghanim Client instance. You can use it here
     }
-}</code></pre><h3>Add your custom component to your bot</h3><pre class="prettyprint source lang-js"><code>    //index.js
+}
+
+module.exports = MyComponent</code></pre><h3>Add your custom component to your bot</h3><pre class="prettyprint source lang-js"><code>    //index.js
     //bot defined...
-    const my_custom_extension = require('my_component')
+    const MyComponent = require('my_component')
     bot.addComponent(MyComponent)
 
     //You can import the file directly using addComponentFile method
@@ -66,7 +64,7 @@ class MyComponent extends Component{
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
