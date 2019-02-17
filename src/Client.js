@@ -143,26 +143,26 @@ class Client extends Eris.Client {
 		this.setup.helpDM = options.helpDM || false
 		if (!options.disableHelp) {
 			// Add default help command to bot
-			this.addCommand(new Command('help', {}, (msg, args, command) => {
-				const categories = this.categories.map(c => c.name.toLowerCase())
+			this.addCommand(new Command('help', {}, async (msg, args, client, command) => {
+				const categories = client.categories.map(c => c.name.toLowerCase())
 				const query = args.from(1).toLowerCase();
-				let { helpMessage } = this.setup
+				let { helpMessage } = client.setup
 				if (categories.includes(query)) {
-					const cmds = this.getCommandsFromCategories(query)
-					const prefix = this.defaultPrefix
+					const cmds = client.getCommandsFromCategories(query)
+					const prefix = client.defaultPrefix
 					if (!cmds) {
-						helpMessage += this.categories.filter((c) => !c.hide)
-							.map((c) => `**${c.name}** \`${this.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`)
-							.join('\n') + '\n\n' + this.setup.helpMessageAfterCategories}
+						helpMessage += client.categories.filter((c) => !c.hide)
+							.map((c) => `**${c.name}** \`${client.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`)
+							.join('\n') + '\n\n' + client.setup.helpMessageAfterCategories}
 					else {
 						helpMessage += cmds.filter(c => !c.hide).map(c => {
 							return `\`${prefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${c.subcommands.length ? '\n' + c.subcommands.filter(s => !s.hide).map(s => `  · \`${s.name}${s.args ? ' ' + s.args : ''}\` - ${s.help}`).join('\n') : ''}`
 						}).join('\n')
 					}
 				}else {
-					helpMessage += this.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${this.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + this.setup.helpMessageAfterCategories
+					helpMessage += client.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${client.defaultPrefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + client.setup.helpMessageAfterCategories
 				}
-				if (!this.setup.helpDM) {
+				if (!client.setup.helpDM) {
 					msg.channel.createMessage(helpMessage)
 				} else {
 					msg.author.getDMChannel().then(channel => channel.createMessage(helpMessage))
@@ -176,6 +176,7 @@ class Client extends Eris.Client {
 	 * @param {Object} msg - The message object recieved from Eris.
 	 */
 	async handleMessage(msg) {
+		if (!this.triggerMessageCreate(msg)) { return }
 		this._handleEvent('messageCreate')(msg)
 
 		if (this.ignoreBots && msg.author.bot) return
@@ -207,6 +208,7 @@ class Client extends Eris.Client {
 		args.from = arg => msg.content.replace(`${this.defaultPrefix}${args.slice(0, arg).join(' ')} `, '')
 		args.until = arg => this.defaultPrefix + args.slice(0, arg).join(' ')
 		args.after = args.from(1)
+		args.client = this
 
 		this.commandArgsMiddleware(args, msg)
 
@@ -217,7 +219,7 @@ class Client extends Eris.Client {
 		if (command.dmOnly && msg.channel.type !== 1) return
 		if (command.userOnly && !command.userOnly.includes(msg.author.id)) return
 		if (command.ownerOnly && msg.author.id !== this.owner.id) return
-		if (command.check && !command.check(msg, args, command, this)) return
+		// if (command.check && !command.check(msg, args, this, command)) return
 		if (command.rolesCanUse && !this.checkRolesCanUse(msg, command.rolesCanUse)) return
 		if (command.permissions && !this.checkHasPermissions(msg, command.permissions)) return
 		if (command.cooldown) {
@@ -226,7 +228,7 @@ class Client extends Eris.Client {
 				if (typeof command.cooldownMessage === 'string') {
 					return msg.channel.createMessage(command.cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username))
 				} else if (typeof command.cooldownMessage === 'function') {
-					let cooldownMessage = command.cooldownMessage.call(this, msg, args, command, cd)
+					const cooldownMessage = command.cooldownMessage(msg, args, this, cd)
 					if (typeof cooldownMessage === 'string') { msg.channel.createMessage(cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username)) }
 					return
 				}
@@ -234,7 +236,17 @@ class Client extends Eris.Client {
 		}	
 		
 		try {
-			const val = await command.process.call(this, msg, args, command)
+			if (command.check && await !command.check(msg, args, this, command)) return
+			/**
+			 * Command Error Event
+			 * @event Client#aghanim:command:process
+			 * @param {object} msg - Eris Message object
+			 * @param {object} args - Args object
+			 * @param {Client} client - Aghaim instance
+			 * @param {Command} command - Command
+			 */
+			this.emit('aghanim:command:process', msg, args, this, command)
+			const val = await command.process(msg, args, this, command)
 			if (command.cooldown) {
 				command.setCooldown(msg.author.id)
 			}
@@ -283,7 +295,7 @@ class Client extends Eris.Client {
 				.filter((component) => component[eventname] && component.enable)
 				.forEach(async (component) => {
 					try {
-						await component[eventname](...args)
+						await component[eventname](...args, this)
 					} catch (err) {
 						logger.error(`${component.constructor.name} got an error. => ${err}`)
 						/**
@@ -539,6 +551,14 @@ class Client extends Eris.Client {
 		return !Object.keys(permissions).map(p => ({name : p, enable : permissions[p]})).some(p => member.permission.json[p.name] !== p.enable)
 	}
 
+	/**
+	 * Check if messageCreate default event is triggered.
+	 * @param  {Eris.message} msg - Eris Message object
+	 * @return {boolean} - true = allow, false = omit
+	 */
+	triggerMessageCreate(msg) {
+		return true
+	}
 	// /**
 	//  * Creates a message. If the specified message content is longer than 2000
 	//  * characters, splits the message intelligently into chunks until each chunk

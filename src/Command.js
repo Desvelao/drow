@@ -100,10 +100,12 @@ class Command {
     *     obtained by removing the command name and prefix from the message, then
     *     splitting on spaces. To get the raw text that was passed to the
     *     command, use `args.join(' ')`.
+	* @param {Client} client client instance that recieved the message triggering the
+    *     command.
     * @param {Command} command - The name or alias used to call the command in
     *     the message. Will be one of the values of `this.names`.
     */
-	async process(msg, args, command) {}
+	async process(msg, args, client, command) {}
 	/**
 	* @callback Command~check
 	* A function to be called before execute a coomand.
