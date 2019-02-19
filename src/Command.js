@@ -41,10 +41,10 @@ class Command {
 			this.name = name
 			this.aliases = []
 		}
-		if (!this.name) throw new TypeError('Name is required')
+		if (!this.name) throw new Error('Name is required')
 		/** @prop {Command~process} - Process of command */
 		this.process = process
-		if (!this.process) throw new TypeError('Process is required')
+		if (!this.process) throw new Error('Process is required')
 		/** @prop {string} - Description of command */
 		this.help = options.help || ''
 		/** @prop {Command[]} - Subcommands of Command. */
@@ -149,12 +149,10 @@ class Command {
 			cd : Math.round(new Date().getTime() / 1000) + this.cooldown
 	}
 
-	static awaitReject() { return Promise.reject() } // Evade setCooldown
-
 	/** Throw a command error */
 	error(message) {
-		return Promise.reject(`<${this.name}> error: ${message}`) /* eslint prefer-promise-reject-errors : "off" */
-		// throw new Error(`Error: ${this.name} failed!`)
+		// return Promise.reject(`<${this.name}> error: ${message}`) /* eslint prefer-promise-reject-errors : "off" */
+		throw new Error(message)
 	}
 }
 

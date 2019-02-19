@@ -1,12 +1,13 @@
 {
   "name": "aghanim",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Command client for ErisJS to create Discord Bots",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "eslint": "./node_modules/.bin/eslint index.js",
-    "docs": "jsdoc src -d docs --readme ./readme.md -c ./conf.json -u ./docs/tutorials"
+    "docs": "jsdoc src -d docs --readme ./readme.md -c ./conf.json -u ./docs/tutorials",,
+    "docs-deploy": "gh-pages -d docs"
   },
   "keywords": [
     "Aghanim",
@@ -26,6 +27,7 @@
     "eslint": "^4.19.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.9.0",
+    "gh-pages": "^2.0.1",
     "jsdoc": "^3.5.5"
   }
 }
