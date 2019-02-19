@@ -20,8 +20,13 @@ Usage information for the bot (the usable commands, default configuration, and o
 ### Installation
 
 ```bash
-$ yarn add Desvelao/aghanim#dev # yarn
+$ npm install --save Desvelao/aghanim #
+$ yarn add Desvelao/aghanim # yarn
+
+# Dev branch
 $ npm install --save Desvelao/aghanim#dev # npm
+$ yarn add Desvelao/aghanim#dev # yarn
+
 ```
 
 ### Usage
@@ -42,8 +47,7 @@ bot.addCategory('Fun','Fun commands')
 
 const pingCommand = new Command('ping', {
   category : 'Fun', help : 'Get Pong!', args : ''},
-  function (msg,args,cmd) {
-		//this = Aghanim.Client
+  function (msg, args, client, command) {
   	msg.channel.createMessage('Pong!')
 })
 
@@ -57,7 +61,7 @@ class MyComponent extends Component{
 	ready(){
 		console.log('My component is ready')
 	}
-	messageCreate(msg, args, command){
+	messageCreate(msg, args, client, command){
 		console.log(`Message: ${msg.content}`)
 		// this.client is Aghanim Client instance. You can use it here
 	}
