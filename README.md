@@ -2,7 +2,7 @@
 
 **Aghanim** is a Command Client for create ***Discord*** bots with [Eris](https://github.com/abalabahaha/eris) in NodeJS based on [Yuuko](https://geo1088.github.io/yuuko)
 
-__Author__ : [Desvelao^^](https://desvelao.github.io/profile/)  __Version__: `v0.0.1`
+__Author__ : [Desvelao^^](https://desvelao.github.io/profile/)  __Version__: `v0.1.0`
 
 ## Features
 - Support for Subcommands (Command should be exist)

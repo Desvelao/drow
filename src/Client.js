@@ -238,7 +238,7 @@ class Client extends Eris.Client {
 		try {
 			if (command.check && await !command.check(msg, args, this, command)) return
 			/**
-			 * Command Error Event
+			 * Command process before to be executed
 			 * @event Client#aghanim:command:process
 			 * @param {object} msg - Eris Message object
 			 * @param {object} args - Args object
