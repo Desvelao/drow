@@ -11,7 +11,7 @@ __Author__ : [Desvelao^^](https://desvelao.github.io/profile/)  __Version__: `v0
 
 ## Using the bot
 
-Usage information for the bot (the usable commands, default configuration, and other help topics) can be found in the wiki [here](https://github.io/Desvelao/aghanim/wiki).
+Usage information for the bot (the usable commands, default configuration, and other help topics) can be found in the wiki [here](https://desvelao.github.io/aghanim/).
 
 ## Using the package
 
@@ -20,7 +20,7 @@ Usage information for the bot (the usable commands, default configuration, and o
 ### Installation
 
 ```bash
-$ npm install --save Desvelao/aghanim #
+$ npm install --save Desvelao/aghanim # npm
 $ yarn add Desvelao/aghanim # yarn
 
 # Dev branch
