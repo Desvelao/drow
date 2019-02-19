@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "eslint": "./node_modules/.bin/eslint index.js",
-    "docs": "jsdoc src -d docs --readme ./readme.md -c ./conf.json -u ./docs/tutorials",,
-    "docs-deploy": "gh-pages -d docs"
+    "docs": "jsdoc src -d docs --readme ./readme.md -c ./conf.json -u ./docs/tutorials",
+    "predeploy" : "npm run docs",
+    "deploy": "gh-pages -d docs"
   },
   "keywords": [
     "Aghanim",
