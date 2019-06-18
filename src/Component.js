@@ -1,4 +1,3 @@
-
 /** Representing a Component */
 class Component {
 	/**
@@ -12,6 +11,7 @@ class Component {
 		this.options = options
 		this.enable = options.enable !== undefined ? options.enable : true
 	}
+
 	ready() { } /* eslint class-methods-use-this : "off" */
 }
 

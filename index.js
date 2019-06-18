@@ -1,9 +1,3 @@
-const { Client, Command, Category, Component, Eris, Logger } = require('./src/Aghanim');
+const Aghanim = require('./src/Aghanim'); /* eslint import/no-cycle : "off" */
 
-module.exports = Client;
-module.exports.Client = Client;
-module.exports.Command = Command;
-module.exports.Category = Category;
-module.exports.Component = Component;
-module.exports.Eris = Eris;
-module.exports.Logger = Logger;
+module.exports = Aghanim;

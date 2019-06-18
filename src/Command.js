@@ -105,7 +105,7 @@ class Command {
     * @param {Command} command - The name or alias used to call the command in
     *     the message. Will be one of the values of `this.names`.
     */
-	async process(msg, args, client, command) {}
+
 	/**
 	* @callback Command~check
 	* A function to be called before execute a coomand.
@@ -129,6 +129,7 @@ class Command {
 	get names() {
 		return [this.name, ...this.aliases]
 	}
+
 	/**
 	 * Get cooldown for user
 	 * @param  {string} id - User id
@@ -151,7 +152,6 @@ class Command {
 
 	/** Throw a command error */
 	error(message) {
-		// return Promise.reject(`<${this.name}> error: ${message}`) /* eslint prefer-promise-reject-errors : "off" */
 		throw new Error(message)
 	}
 }
