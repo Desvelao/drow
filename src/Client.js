@@ -252,7 +252,7 @@ class Client extends Eris.Client {
 			 * @param {object} args - Args object
 			 * @param {Component} command - Command
 			 */
-			logger.error('Error Command TryCatched =>', err)
+			logger.error('Error Command =>', err)
 			this.emit('aghanim:command:error', err, msg, args, command)
 		}
 
@@ -399,7 +399,9 @@ class Client extends Eris.Client {
 		try {
 			const componentClass = reload(filename)
 			const component = this.addComponent(componentClass)
-			component.filename = filename
+			if(component){
+				component.filename = filename
+			}
 		} catch (err) {
 			logger.error(err)
 		}
