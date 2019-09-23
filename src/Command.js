@@ -29,9 +29,9 @@ class Command {
    * @param {boolean} [options.enable=true] - Enable/Disable the command
    * @param {boolean} [options.await=false] - Await to resolve the command for put cooldown
 	 *
-   * @param {Command~process} process - The function to be called when the command is executed.
+   * @param {Command~run} run - The function to be called when the command is executed.
    */
-	constructor(name, options, process) {
+	constructor(name, options, run) {
 		if (Array.isArray(name)) {
 			/** @prop {string} - Name of Command */
 			[this.name] = name.splice(0, 1)
@@ -42,9 +42,9 @@ class Command {
 			this.aliases = []
 		}
 		if (!this.name) throw new Error('Name is required')
-		/** @prop {Command~process} - Process of command */
-		this.process = process
-		if (!this.process) throw new Error('Process is required')
+		/** @prop {Command~run} - Run function of command */
+		this.run = run
+		if (!this.run) throw new Error('Run function is required')
 		/** @prop {string} - Description of command */
 		this.help = options.help || ''
 		/** @prop {Command[]} - Subcommands of Command. */
@@ -88,7 +88,7 @@ class Command {
 	}
 
 	/**
-    * @callback Command~process
+    * @callback Command~run
     * A function to be called when a command is executed. Accepts information
     * about the message that triggered the command as arguments.
     * @this {Client} The client instance that recieved the message triggering the
