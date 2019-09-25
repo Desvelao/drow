@@ -2,7 +2,7 @@
 
 **Aghanim** is a Command Client created by [Desvelao^^](https://desvelao.github.io/profile/) for create bots with [Eris](https://github.com/abalabahaha/eris) in NodeJS based on [Yuuko](https://geo1088.github.io/yuuko)
 
-**Version**: `v0.0.1`
+**Version**: `v0.1.0`
 
 ### Using the package
 
@@ -20,7 +20,6 @@ $ npm install --save Desvelao/aghanim#dev # npm
 2. Define your [Categories](tutorial-categories.html)
 4. Add [Commands/Subcommands](tutorial-commands.html)
 5. Add [Components](tutorial-components.html)
-6. Connect bot
 
 ### Fast Example
 
@@ -29,14 +28,14 @@ $ npm install --save Desvelao/aghanim#dev # npm
 const Aghanim = require('aghanim')
 const { Command, Component }  = require('aghanim')
 
-const bot = new Aghanim(
+const client = new Aghanim(
 	'your_bot_token', // Token used to auth your bot account
     {
   		prefix: 'a!', // Prefix used to trigger commands
 	}
 )
 
-bot.addCategory('Fun','Fun commands')
+client.addCategory('Fun','Fun commands')
 
 const pingCommand = new Command('ping', {
   category : 'Fun', help : 'Get Pong!', args : ''},
@@ -45,7 +44,7 @@ const pingCommand = new Command('ping', {
   	msg.channel.createMessage('Pong!')
 })
 
-bot.addCommand(pingCommand)
+client.addCommand(pingCommand)
 
 // Component:
 class MyComponent extends Component{
@@ -61,10 +60,10 @@ class MyComponent extends Component{
 	}
 }
 
-bot.addComponent(MyComponent)
+client.addComponent(MyComponent)
 
 // Bot connent
-bot.connect()
+client.connect()
 ```
 
 ```bash

@@ -36,14 +36,14 @@ $ yarn add Desvelao/aghanim#dev # yarn
 const Aghanim  = require('aghanim')
 const { Command, Component }  = require('aghanim')
 
-const bot = new Aghanim(
+const client = new Aghanim(
 	'your_bot_token', // Token used to auth your bot account
     {
   		prefix: 'a!', // Prefix used to trigger commands
 	}
 )
 
-bot.addCategory('Fun','Fun commands')
+client.addCategory('Fun','Fun commands')
 
 const pingCommand = new Command('ping', {
   category : 'Fun', help : 'Get Pong!', args : ''},
@@ -51,26 +51,26 @@ const pingCommand = new Command('ping', {
   	msg.channel.createMessage('Pong!')
 })
 
-bot.addCommand(pingCommand)
+client.addCommand(pingCommand)
 
 // Component:
 class MyComponent extends Component{
 	constructor(client, options) {
 		super(client) // this.client is Aghanim Client instance. You can use in other methods
 	}
-	ready(){
+	ready(client){ // method fired in client.on('ready', handler) by default of this component. Each component can add handlers for events.
 		console.log('My component is ready')
 	}
-	messageCreate(msg, args, client, command){
+	messageCreate(msg, args, client, command){ // method fired in client.on('messageCreat', handler).
 		console.log(`Message: ${msg.content}`)
 		// this.client is Aghanim Client instance. You can use it here
 	}
 }
 
-bot.addComponent(MyComponent)
+client.addComponent(MyComponent)
 
 // Bot connent
-bot.connect()
+client.connect()
 ```
 
 ```bash

@@ -8,6 +8,6 @@ Add a category:
 	//bot defined...
 	
 	// Add a category with name "Fun"
-	bot.addCategory('Fun', // Category name
+	client.addCategory('Fun', // Category name
 	'List of fun commands') // Description
 ```

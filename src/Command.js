@@ -49,50 +49,48 @@ class Command {
 		this.help = options.help || ''
 		/** @prop {Command[]} - Subcommands of Command. */
 		this.subcommands = []
-		/** @prop {Command} - Upper Command */
+		/** @prop {Command} - Parent Command */
 		this.upcommand = undefined
 		/** @prop {boolean} - Command responds to guilds messages */
 		this.guildOnly = options.guildOnly || false
-		/** @prop {boolean} - Command responds to dm messages */
+		/** @prop {boolean} - Command responds only to dm messages */
 		this.dmOnly = options.dmOnly || false
-		/** @prop {boolean} - Command responds to specific users messages */
+		/** @prop {(false|string|string[])} - Command responds to specific users messages. False by default.*/
 		this.userOnly = typeof options.userOnly === 'string' ? [options.userOnly] : (Array.isArray(options.userOnly)) ? options.userOnly : false /* eslint no-nested-ternary : "off" */
 		/** @prop {boolean} - Command responds to owner messages */
 		this.ownerOnly = options.ownerOnly || false
-		/** @prop {string[]} -
-		 * Command responds to specific members with roles, Message should be sent from a guild */
+		/** @prop {(false|string|string[])} -
+		 * Command responds to specific members with roles. Message should be sent from a guild */
 		this.rolesCanUse = options.rolesCanUse || false
 		/** @prop {Command~check} - Custom requirements to execute the command */
 		this.check = options.check || null
-		/** @prop {string[]} - Array of permissions in strings */
+		/** @prop {(undefined|string[])} - Array of permissions in strings */
 		this.permissions = options.permissions || null
-		/** @prop {string} - Time in seconds that Command has cooldown for a user */
+		/** @prop {number|null} - Time in seconds that Command has cooldown for a user */
 		this.cooldown = options.cooldown || null
+		/** @prop {{string: number}} - Users cooldown */
 		this.cooldowns = {}
 		/** @prop {string} -
 		 * Message to responds when a Command is on cooldown. Replace "<cd>" for seconds remaining */
 		this.cooldownMessage = options.cooldownMessage || 'Not yet! Ready in **<cd>**s'
-		/** @prop {string} - Name of uppercomand */
+		/** @prop {string|undefined} - Name of uppercomand */
 		this.subcommandFrom = options.subcommandFrom
 		/** @prop {string} - Command category. It should exist if not, will be 'Default' */
 		this.category = options.category || 'Default'
 		/** @prop {string} - Arguments for a command */
 		this.args = options.args || ''
-		/** @prop {boolean} - Hide for a default help Command */
+		/** @prop {boolean} - Hide to default help command */
 		this.hide = options.hide !== undefined ? options.hide : false // Hide command from help command
 		/** @prop {boolean} - Enable/Disable the command */
 		this.enable = options.enable !== undefined ? options.enable : true // Enable or disable command
-		/** @prop {boolean} - Await the execution. (cooldown purposes) */
+		/** @prop {boolean} - Await result comand and warning if return is undefined. */
 		this.await = options.await !== undefined ? options.await : false
-		// Await result comand and warning if return is undefined
 	}
 
 	/**
     * @callback Command~run
     * A function to be called when a command is executed. Accepts information
     * about the message that triggered the command as arguments.
-    * @this {Client} The client instance that recieved the message triggering the
-    *     command.
     * @param {Eris.Message} msg - The Eris message object that triggered the command.
     *     For more information, see the Eris documentation:
     *     {@link https://abal.moe/Eris/docs/Message}
@@ -117,6 +115,8 @@ class Command {
 	*     obtained by removing the command name and prefix from the message, then
 	*     splitting on spaces. To get the raw text that was passed to the
 	*     command, use `args.join(' ')`.
+	* @param {Client} client client instance that recieved the message triggering the
+    *     command.
 	* @param {Command} command - The name or alias used to call the command in
 	*     the message. Will be one of the values of `this.names`.
 	*/
