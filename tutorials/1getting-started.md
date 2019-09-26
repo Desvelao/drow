@@ -16,10 +16,10 @@ $ npm install --save Desvelao/aghanim#dev # npm
 ```
 
 ### Steps
-1. [Create](./create-bot.html) a bot instance
-2. Define your [Categories](tutorial-categories.html)
-4. Add [Commands/Subcommands](tutorial-commands.html)
-5. Add [Components](tutorial-components.html)
+1. [Create](./tutorial-2create-bot.html) a bot instance
+2. Define your [Categories](tutorial-5categories.html)
+4. Add [Commands/Subcommands](tutorial-3command.html)
+5. Add [Components](tutorial-4components.html)
 
 ### Fast Example
 

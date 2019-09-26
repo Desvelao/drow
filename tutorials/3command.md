@@ -31,7 +31,7 @@ module.exports = new Command('ping', {
 const { Command } = require('aghanim')
 
 module.exports = new Command('pong', {
-  subcommandFrom : 'ping',
+  subcommandFrom : 'ping', // Upper/Parent command Command. It should be defined before add this subcommand
   category : 'Fun', help : 'Get Pong!', args : ''},
   async function (msg, args, client, command) {
   	msg.channel.createMessage('Pong!')
@@ -39,5 +39,3 @@ module.exports = new Command('pong', {
 
 // This command will be fired with `[botPrefix]ping pong`
 ```
-
-You need add it to bot after `ping` command.
