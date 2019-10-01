@@ -123,11 +123,12 @@ class Client extends Eris.Client {
 		}).on('error', (err) => {
 			logger.error(err)
 			/**
-			 * Command Error Event
+			 * Fired when there are an error
 			 * @event Client#aghanim:error
 			 * @param {object} err - Error
+			 * @param {Client} client - Client instance
 			 */
-			this.emit('aghanim:error', err)
+			this.emit('aghanim:error', err, this)
 		}).on('messageCreate', this.handleMessage)
 			.on('messageReactionAdd', this._handleEvent('messageReactionAdd'))
 			.on('messageReactionRemove', this._handleEvent('messageReactionRemove'))
@@ -228,11 +229,11 @@ class Client extends Eris.Client {
 		try {
 			if (command.check && await !command.check(msg, args, this, command)) return
 			/**
-			 * Command process before to be executed
+			 * Fired before a command is executed
 			 * @event Client#aghanim:command:beforerun
 			 * @param {object} msg - Eris Message object
-			 * @param {object} args - Args object
-			 * @param {Client} client - Aghaim instance
+			 * @param {args} args - Args object
+			 * @param {Client} client - Client instance
 			 * @param {Command} command - Command
 			 */
 			this.emit('aghanim:command:beforerun', msg, args, this, command)
@@ -245,12 +246,12 @@ class Client extends Eris.Client {
 			}
 		}catch(err) {
 			/**
-			 * Command Error Event
+			 * Fired when a command got an error executing the run function
 			 * @event Client#aghanim:command:error
 			 * @param {object} err - Error
 			 * @param {object} msg - Eris Message object
 			 * @param {args} args - Args object
-			 * @param {Client} client - Cliient instance
+			 * @param {Client} client - Client instance
 			 * @param {Command} command - Command
 			 */
 			logger.error('Error Command =>', err)
@@ -270,12 +271,14 @@ class Client extends Eris.Client {
 					} catch (err) {
 						logger.error(`${component.constructor.name} got an error. => ${err}`)
 						/**
-						 * Command Error Event
+						 * Fired when a component get an error to be executed
 						 * @event Client#aghanim:component:error
 						 * @param {object} err - Error
+						 * @param {string} eventname - Name of Eris event
+						 * @param {Client} client - Client instance
 						 * @param {Component} component - Component
 						 */
-						this.emit('aghanim:component:error', err, component)
+						this.emit('aghanim:component:error', err, eventname, client, component)
 					}
 				})
 		}
