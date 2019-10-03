@@ -1,7 +1,7 @@
 {
   "name": "aghanim",
   "version": "0.1.0",
-  "description": "Command client for ErisJS to create Discord Bots",
+  "description": "Alternative command client for ErisJS to create Discord bots",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

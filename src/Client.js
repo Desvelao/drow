@@ -552,7 +552,7 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Check if messageCreate default event is triggered.
+	 * If returns true, allow default commands management.
 	 * @param  {Eris.message} msg - Eris Message object
 	 * @return {boolean} - true = allow, false = omit
 	 */

@@ -85,6 +85,8 @@ class Command {
 		this.enable = options.enable !== undefined ? options.enable : true // Enable or disable command
 		/** @prop {boolean} - Await result comand and warning if return is undefined. */
 		this.await = options.await !== undefined ? options.await : false
+		/** @prop {Client} - Client instance */
+		this.client = undefined
 	}
 
 	/**
