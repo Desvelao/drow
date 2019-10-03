@@ -25,15 +25,15 @@ class Client extends Eris.Client {
 	* @class
 	* @param {string} token - The token used to log into the bot.
 	* @param {Object} options - Options to start the client with. This object is also passed to Eris.
-	* @param {string} options.prefix - The prefix the bot will respond to in
+	*     If there are a aghanim.config.js/json in project root, that will be loaded instead object passed to constructor.
+	*     See Eris Client constructor options https://abal.moe/Eris/docs/Client
+	* @param {string} [options.prefix = ''] - The prefix the bot will respond to in
 	*     guilds for which there is no other confguration. (Currently everywhere)
 	* @param {boolean} [options.allowMention = false] - Whether or not the bot can respond
 	*     to messages starting with a mention of the bot.
 	* @param {boolean} [options.ignoreBots = true] - Whether or not the bot ignoresBots. Default: true
-	* @param {number} options.logLevel - The minimum message level for logged events in the console.
 	* @param {string} [options.helpMessage = '**Help**'] - Title for default command help Message
-	* @param {string} [options.helpMessageAfterCategories = '**Note**: Use
-	* \`${options.prefix}help <category>\` to see those commands'] -
+	* @param {string} [options.helpMessageAfterCategories = '**Note**: Use \`${options.prefix}help <category>\` to see the commands']
 	* Message after categories in default command help message are shown
 	* @param {boolean} [options.helpDM = true] - Active direct message to default command help
 	* @param {boolean} [options.helpEnable = true] - Enable/disable default command help
@@ -123,11 +123,12 @@ class Client extends Eris.Client {
 		}).on('error', (err) => {
 			logger.error(err)
 			/**
-			 * Command Error Event
+			 * Fired when there are an error
 			 * @event Client#aghanim:error
 			 * @param {object} err - Error
+			 * @param {Client} client - Client instance
 			 */
-			this.emit('aghanim:error', err)
+			this.emit('aghanim:error', err, this)
 		}).on('messageCreate', this.handleMessage)
 			.on('messageReactionAdd', this._handleEvent('messageReactionAdd'))
 			.on('messageReactionRemove', this._handleEvent('messageReactionRemove'))
@@ -228,14 +229,14 @@ class Client extends Eris.Client {
 		try {
 			if (command.check && await !command.check(msg, args, this, command)) return
 			/**
-			 * Command process before to be executed
-			 * @event Client#aghanim:command:run
+			 * Fired before a command is executed
+			 * @event Client#aghanim:command:beforerun
 			 * @param {object} msg - Eris Message object
-			 * @param {object} args - Args object
-			 * @param {Client} client - Aghaim instance
+			 * @param {args} args - Args object
+			 * @param {Client} client - Client instance
 			 * @param {Command} command - Command
 			 */
-			this.emit('aghanim:command:run', msg, args, this, command)
+			this.emit('aghanim:command:beforerun', msg, args, this, command)
 			const val = await command.run(msg, args, this, command)
 			if (command.cooldown) {
 				command.setCooldown(msg.author.id)
@@ -245,15 +246,16 @@ class Client extends Eris.Client {
 			}
 		}catch(err) {
 			/**
-			 * Command Error Event
+			 * Fired when a command got an error executing the run function
 			 * @event Client#aghanim:command:error
 			 * @param {object} err - Error
 			 * @param {object} msg - Eris Message object
-			 * @param {object} args - Args object
-			 * @param {Component} command - Command
+			 * @param {args} args - Args object
+			 * @param {Client} client - Client instance
+			 * @param {Command} command - Command
 			 */
 			logger.error('Error Command =>', err)
-			this.emit('aghanim:command:error', err, msg, args, command)
+			this.emit('aghanim:command:error', err, msg, args, client, command)
 		}
 
 	}
@@ -269,12 +271,14 @@ class Client extends Eris.Client {
 					} catch (err) {
 						logger.error(`${component.constructor.name} got an error. => ${err}`)
 						/**
-						 * Command Error Event
+						 * Fired when a component get an error to be executed
 						 * @event Client#aghanim:component:error
 						 * @param {object} err - Error
+						 * @param {string} eventname - Name of Eris event
+						 * @param {Client} client - Client instance
 						 * @param {Component} component - Component
 						 */
-						this.emit('aghanim:component:error', err, component)
+						this.emit('aghanim:component:error', err, eventname, client, component)
 					}
 				})
 		}
@@ -548,7 +552,7 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Check if messageCreate default event is triggered.
+	 * If returns true, allow default commands management.
 	 * @param  {Eris.message} msg - Eris Message object
 	 * @return {boolean} - true = allow, false = omit
 	 */
