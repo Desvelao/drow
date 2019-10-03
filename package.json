@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "another-logger": "^2.0.0",
-    "eris": "^0.10.0",
+    "eris": "^0.10.1",
     "glob": "^7.1.4",
     "require-reload": "^0.2.2"
   },
