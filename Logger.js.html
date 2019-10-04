@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Tutorial: Create Commands/Subcommands</title>
+    <title>JSDoc: Source: Logger.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,55 +17,27 @@
 
 <div id="main">
 
-    <h1 class="page-title">Tutorial: Create Commands/Subcommands</h1>
+    <h1 class="page-title">Source: Logger.js</h1>
 
-    <section>
-
-<header>
     
 
-    <h2>Create Commands/Subcommands</h2>
-</header>
 
-<article>
-    <h3>Create a Command</h3>
-<pre class="prettyprint source lang-js"><code>//ping.js
-const { Command } = require('aghanim')
 
-module.exports = new Command('ping', {
-  category : 'Fun', help : 'Get Pong!', args : ''},
-  async function (msg, args, client, command) { 
-  	msg.channel.createMessage('Pong!')
-})
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** Class representing a command. */
+/** @typedef {object} Logger See {@link https://github.com/Geo1088/another-logger another-logger} */
+/** {@link https://github.com/Geo1088/another-logger another-logger} */
+const Logger = require('another-logger')
+
+module.exports = Logger
 </code></pre>
-<h3>Add your command to your bot</h3>
-<pre class="prettyprint source lang-js"><code>	//index.js
-	//bot defined...
-	const ping_command = require('./ping.js')
-	client.addCommmand(ping_command)
+        </article>
+    </section>
 
-	//You can import the file directly using addCommandFile method
-	client.addCommandFile(__dirname + '/ping.js')
 
-	//Or you can import a directory of commands with addCommandDir method
-	client.addCommandDir(__dirname + 'path/to/commands')
-</code></pre>
-<h3>Create a Subcommand</h3>
-<pre class="prettyprint source lang-js"><code>//pong.js
-const { Command } = require('aghanim')
 
-module.exports = new Command('pong', {
-  subcommandFrom : 'ping', // Upper/Parent command Command. It should be defined before add this subcommand
-  category : 'Fun', help : 'Get Pong!', args : ''},
-  async function (msg, args, client, command) {
-  	msg.channel.createMessage('Pong!')
-})
-
-// This command will be fired with `[botPrefix]ping pong`
-</code></pre>
-</article>
-
-</section>
 
 </div>
 

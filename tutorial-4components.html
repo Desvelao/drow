@@ -53,14 +53,38 @@ module.exports = MyComponent
 <h3>Add your custom component to your bot</h3>
 <pre class="prettyprint source lang-js"><code>	//index.js
 	//bot defined...
-	const MyComponent = require('my_component')
-	bot.addComponent(MyComponent)
+	const MyComponent = require('./my_component.js')
+	client.addComponent(MyComponent)
 
 	//You can import the file directly using addComponentFile method
-	bot.addComponentFile(__dirname + 'my_component.js')
+	client.addComponentFile(__dirname + '/my_component.js')
 
 	//Or you can import a directory of components with addComponentDir method
-	bot.addComponentDir(__dirname + 'path/to/components_folder')
+	client.addComponentDir(__dirname + '/path/to/components_folder')
+</code></pre>
+<h3>Methods of events in components</h3>
+<p>These events will be fired of components:</p>
+<ul>
+<li><code>ready</code> (fired once)</li>
+<li><code>messageCreate</code></li>
+<li><code>messageReactionAdd</code></li>
+<li><code>messageReactionRemove</code></li>
+<li><code>guildCreate</code></li>
+<li><code>guildDelete</code></li>
+<li><code>guildMemberAdd</code></li>
+<li><code>guildMemberRemove</code></li>
+</ul>
+<p>For more info about client events go to <a href="https://abal.moe/Eris/docs/Client#event-callCreate">Eris</a></p>
+<p>The arguments of these events are same Eris and added client as last. That means that if for example:</p>
+<ul>
+<li>Eris event: messageCreate(message)</li>
+<li>Aghanim event: messageCreate(message, client)</li>
+</ul>
+<p>If you need listen more events of that Aghanim do fby default you can do it</p>
+<pre class="prettyprint source lang-js"><code>client.on(eventName, handler)
+
+// or if you want add Aghanim functionality through components
+client.on(eventName, client._handleEvent(eventName)) // that add client as last argument to event handler
 </code></pre>
 </article>
 
@@ -69,7 +93,7 @@ module.exports = MyComponent
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:run">aghanim:command:run</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
 </nav>
 
 <br class="clear">

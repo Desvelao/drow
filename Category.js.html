@@ -31,17 +31,15 @@ class Category {
 	/**
    * Create a category.
    * @param {string} name - The name of category.
-   * @param {string} help - Help description
+   * @param {string} [help = `Help for ${this.name} category`]  - Help description
    * @param {object} options - Help description
-   * @param {object} options.hide - Hide when use default help command
-   * @param {object} options.restrict -
+   * @param {object} [options.hide = false] - Hide when use default help command
    */
 	constructor(name, help, options = {}) {
 		if (!name) { throw new Error('Name is required') }
-		this.name = name || ''
+		this.name = name
 		this.help = help || `Help for ${this.name} category`
 		this.hide = options.hide || false
-		this.restrict = options.restrict || function () { return false } /* eslint func-names : "off" */
 		for (const opt in options) { /* eslint no-restricted-syntax : "off" */
 			if (!this.hasOwnProperty(opt)) { /* eslint no-prototype-builtins : "off" */
 				this[opt] = options[opt]
@@ -61,7 +59,7 @@ module.exports = Category
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:run">aghanim:command:run</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
 </nav>
 
 <br class="clear">

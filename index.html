@@ -70,14 +70,14 @@ $ yarn add Desvelao/aghanim#dev # yarn
 const Aghanim  = require('aghanim')
 const { Command, Component }  = require('aghanim')
 
-const bot = new Aghanim(
+const client = new Aghanim(
 	'your_bot_token', // Token used to auth your bot account
     {
   		prefix: 'a!', // Prefix used to trigger commands
 	}
 )
 
-bot.addCategory('Fun','Fun commands')
+client.addCategory('Fun','Fun commands')
 
 const pingCommand = new Command('ping', {
   category : 'Fun', help : 'Get Pong!', args : ''},
@@ -85,26 +85,26 @@ const pingCommand = new Command('ping', {
   	msg.channel.createMessage('Pong!')
 })
 
-bot.addCommand(pingCommand)
+client.addCommand(pingCommand)
 
 // Component:
 class MyComponent extends Component{
 	constructor(client, options) {
 		super(client) // this.client is Aghanim Client instance. You can use in other methods
 	}
-	ready(){
+	ready(client){ // method fired in client.on('ready', handler) by default of this component. Each component can add handlers for events.
 		console.log('My component is ready')
 	}
-	messageCreate(msg, args, client, command){
+	messageCreate(msg, args, client, command){ // method fired in client.on('messageCreat', handler).
 		console.log(`Message: ${msg.content}`)
 		// this.client is Aghanim Client instance. You can use it here
 	}
 }
 
-bot.addComponent(MyComponent)
+client.addComponent(MyComponent)
 
 // Bot connent
-bot.connect()
+client.connect()
 </code></pre>
 <pre class="prettyprint source lang-bash"><code>$ node index.js
 </code></pre></article>
@@ -118,7 +118,7 @@ bot.connect()
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:run">aghanim:command:run</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
 </nav>
 
 <br class="clear">

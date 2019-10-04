@@ -30,12 +30,12 @@
 <article>
     <p>You can define your category methods. It should do before you add commands to your bot.</p>
 <h3>Add a category</h3>
-<p>Add a category:</p>
-<pre class="prettyprint source lang-js"><code>	//bot defined...
-	
+<pre class="prettyprint source lang-js"><code>	//index.js
+	//bot defined...
 	// Add a category with name &quot;Fun&quot;
-	bot.addCategory('Fun', // Category name
-	'List of fun commands') // Description
+	client.addCategory('Fun', // Category name
+	'List of fun commands', ) // Description
+	{hide: false}) // options (optional). options.hide is false by default. Hide category of help default command. 
 </code></pre>
 </article>
 
@@ -44,7 +44,7 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:run">aghanim:command:run</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
 </nav>
 
 <br class="clear">

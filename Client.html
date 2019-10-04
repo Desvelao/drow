@@ -77,11 +77,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -106,19 +102,7 @@
             </td>
 
             
-                <td class="attributes">
-                
 
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last">The token used to log into the bot.</td>
@@ -141,22 +125,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                </td>
-            
 
-            <td class="description last">Options to start the client with. This object is also passed to Eris.
+            <td class="description last">Options to start the client with. This object is also passed to Eris.    If there are a aghanim.config.js/json in project root, that will be loaded instead object passed to constructor.    See Eris Client constructor options https://abal.moe/Eris/docs/Client
                 <h6>Properties</h6>
                 
 
@@ -201,6 +173,8 @@
             
                 <td class="attributes">
                 
+                    &lt;optional><br>
+                
 
                 
 
@@ -210,6 +184,8 @@
 
             
                 <td class="default">
+                
+                    ''
                 
                 </td>
             
@@ -299,41 +275,6 @@
 
         <tr>
             
-                <td class="name"><code>logLevel</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">The minimum message level for logged events in the console.</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>helpMessage</code></td>
             
 
@@ -370,17 +311,10 @@
         </tr>
 
     
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
 
         <tr>
             
-                <td class="name"><code>[options.helpMessageAfterCategories = '**Note**: Use\`${options.prefix}help <category>\` to see those commands']</code></td>
+                <td class="name"><code>helpMessageAfterCategories</code></td>
             
 
             <td class="type">
@@ -395,6 +329,8 @@
             
                 <td class="attributes">
                 
+                    &lt;optional><br>
+                
 
                 
 
@@ -404,6 +340,8 @@
 
             
                 <td class="default">
+                
+                    '**Note**: Use \`${options.prefix}help &lt;category>\` to see the commands'
                 
                 </td>
             
@@ -415,7 +353,7 @@
 
         <tr>
             
-                <td class="name"><code>options.helpDM</code></td>
+                <td class="name"><code>helpDM</code></td>
             
 
             <td class="type">
@@ -454,7 +392,7 @@
 
         <tr>
             
-                <td class="name"><code>options.helpEnable</code></td>
+                <td class="name"><code>helpEnable</code></td>
             
 
             <td class="type">
@@ -493,7 +431,7 @@
 
         <tr>
             
-                <td class="name"><code>options.devLogs</code></td>
+                <td class="name"><code>devLogs</code></td>
             
 
             <td class="type">
@@ -526,6 +464,13 @@
             
 
             <td class="description last">Enable/disable default command help</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -2298,7 +2243,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line363">line 363</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line367">line 367</a>
     </li></ul></dd>
     
 
@@ -2435,7 +2380,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line297">line 297</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line301">line 301</a>
     </li></ul></dd>
     
 
@@ -2594,7 +2539,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line334">line 334</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line338">line 338</a>
     </li></ul></dd>
     
 
@@ -2731,7 +2676,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line345">line 345</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line349">line 349</a>
     </li></ul></dd>
     
 
@@ -2868,7 +2813,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line377">line 377</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line381">line 381</a>
     </li></ul></dd>
     
 
@@ -3030,7 +2975,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line414">line 414</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line418">line 418</a>
     </li></ul></dd>
     
 
@@ -3167,7 +3112,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line398">line 398</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line402">line 402</a>
     </li></ul></dd>
     
 
@@ -3327,7 +3272,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line288">line 288</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line292">line 292</a>
     </li></ul></dd>
     
 
@@ -3487,7 +3432,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line468">line 468</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line472">line 472</a>
     </li></ul></dd>
     
 
@@ -3648,7 +3593,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line522">line 522</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line526">line 526</a>
     </li></ul></dd>
     
 
@@ -3810,7 +3755,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line175">line 175</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line176">line 176</a>
     </li></ul></dd>
     
 
@@ -3920,7 +3865,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line426">line 426</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line430">line 430</a>
     </li></ul></dd>
     
 
@@ -4008,7 +3953,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line449">line 449</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line453">line 453</a>
     </li></ul></dd>
     
 
@@ -4052,7 +3997,7 @@
 
 
 <div class="description">
-    Check if messageCreate default event is triggered.
+    If returns true, allow default commands management.
 </div>
 
 
@@ -4145,7 +4090,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line555">line 555</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line559">line 559</a>
     </li></ul></dd>
     
 
@@ -4211,7 +4156,7 @@
     
 
     
-    <h4 class="name" id="event:aghanim:command:error">aghanim:command:error</h4>
+    <h4 class="name" id="event:aghanim:command:beforerun">aghanim:command:beforerun</h4>
     
 
     
@@ -4219,213 +4164,7 @@
 
 
 <div class="description">
-    Command Error Event
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>err</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Error</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>msg</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Eris Message object</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Args object</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>command</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Component.html">Component</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Command</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line247">line 247</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="event:aghanim:command:run">aghanim:command:run</h4>
-    
-
-    
-
-
-
-<div class="description">
-    Command process before to be executed
+    Fired before a command is executed
 </div>
 
 
@@ -4490,7 +4229,7 @@
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><a href="global.html#args">args</a></span>
 
 
             
@@ -4523,7 +4262,7 @@
 
             
 
-            <td class="description last">Aghaim instance</td>
+            <td class="description last">Client instance</td>
         </tr>
 
     
@@ -4587,7 +4326,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line230">line 230</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line231">line 231</a>
     </li></ul></dd>
     
 
@@ -4623,7 +4362,7 @@
     
 
     
-    <h4 class="name" id="event:aghanim:component:error">aghanim:component:error</h4>
+    <h4 class="name" id="event:aghanim:command:error">aghanim:command:error</h4>
     
 
     
@@ -4631,7 +4370,7 @@
 
 
 <div class="description">
-    Command Error Event
+    Fired when a command got an error executing the run function
 </div>
 
 
@@ -4684,6 +4423,281 @@
             
 
             <td class="description last">Error</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>msg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Eris Message object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#args">args</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Args object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>client</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Client.html">Client</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Client instance</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>command</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Command.html">Command</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Command</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line248">line 248</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:aghanim:component:error">aghanim:component:error</h4>
+    
+
+    
+
+
+
+<div class="description">
+    Fired when a component get an error to be executed
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>err</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Error</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>eventname</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Name of Eris event</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>client</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Client.html">Client</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Client instance</td>
         </tr>
 
     
@@ -4747,7 +4761,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line271">line 271</a>
+        <a href="Client.js.html">Client.js</a>, <a href="Client.js.html#line273">line 273</a>
     </li></ul></dd>
     
 
@@ -4791,7 +4805,7 @@
 
 
 <div class="description">
-    Command Error Event
+    Fired when there are an error
 </div>
 
 
@@ -4844,6 +4858,29 @@
             
 
             <td class="description last">Error</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>client</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Client.html">Client</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Client instance</td>
         </tr>
 
     
@@ -4926,7 +4963,7 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:run">aghanim:command:run</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
 </nav>
 
 <br class="clear">
