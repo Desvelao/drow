@@ -193,6 +193,7 @@ class Client extends Eris.Client {
 		 * @prop {function} from - Splice message content from argument number to end message
 		 * @prop {function} until - Splice message content from begin until argument number
 		 * @prop {function} after - Same content
+		 * @prop {Client} client - Client instance
 		 * @prop {array} - Each word form message is in a slot
 		 */
 		args.prefix = prefix
@@ -255,7 +256,7 @@ class Client extends Eris.Client {
 			 * @param {Command} command - Command
 			 */
 			logger.error('Error Command =>', err)
-			this.emit('aghanim:command:error', err, msg, args, client, command)
+			this.emit('aghanim:command:error', err, msg, args, this, command)
 		}
 
 	}
@@ -278,7 +279,7 @@ class Client extends Eris.Client {
 						 * @param {Client} client - Client instance
 						 * @param {Component} component - Component
 						 */
-						this.emit('aghanim:component:error', err, eventname, client, component)
+						this.emit('aghanim:component:error', err, eventname, this, component)
 					}
 				})
 		}
