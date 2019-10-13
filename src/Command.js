@@ -20,7 +20,7 @@ class Command {
    * @param {number} [options.cooldown=null] - Time in seconds
    * @param {string} [options.cooldownMessage='Not yet! Ready in **<cd>**s'] -
    * Message sent if command is in cooldown for that user
-   * @param {string} [options.subcommandFrom=undefined] -
+   * @param {string} [options.childOf=undefined] -
    * Name of command that this commad is subcommand. It needs exists.
    * @param {string} [options.category='Default'] - Category from this command
    * @param {string} [options.help=''] - Description of command
@@ -31,26 +31,34 @@ class Command {
 	 *
    * @param {Command~run} run - The function to be called when the command is executed.
    */
-	constructor(name, options, run) {
+	constructor(name, options = {}, run) {
 		if (Array.isArray(name)) {
 			/** @prop {string} - Name of Command */
 			[this.name] = name.splice(0, 1)
 			/** @prop {string[]} - Command aliases */
 			this.aliases = name
-		} else {
+		} else if(typeof(name) === "string") {
 			this.name = name
 			this.aliases = []
+		} else if(typeof(name) === "object") {
+			options = name
+			if (Array.isArray(options.name)) {
+				[this.name] = options.name.splice(0, 1)
+				this.aliases = options.name
+			} else if(typeof(options.name) === "string") {
+				this.name = options.name
+				this.aliases = []
+			}
 		}
 		if (!this.name) throw new Error('Name is required')
 		/** @prop {Command~run} - Run function of command */
-		this.run = run
-		if (!this.run) throw new Error('Run function is required')
+		this.run = run || options.run || async function(){}
 		/** @prop {string} - Description of command */
 		this.help = options.help || ''
 		/** @prop {Command[]} - Subcommands of Command. */
-		this.subcommands = []
-		/** @prop {Command} - Parent Command */
-		this.upcommand = undefined
+		this.childs = []
+		/** @prop {Command | undefined} - Parent Command */
+		this.parent = undefined
 		/** @prop {boolean} - Command responds to guilds messages */
 		this.guildOnly = options.guildOnly || false
 		/** @prop {boolean} - Command responds only to dm messages */
@@ -74,7 +82,7 @@ class Command {
 		 * Message to responds when a Command is on cooldown. Replace "<cd>" for seconds remaining */
 		this.cooldownMessage = options.cooldownMessage || 'Not yet! Ready in **<cd>**s'
 		/** @prop {string|undefined} - Name of uppercomand */
-		this.subcommandFrom = options.subcommandFrom
+		this.childOf = options.childOf
 		/** @prop {string} - Command category. It should exist if not, will be 'Default' */
 		this.category = options.category || 'Default'
 		/** @prop {string} - Arguments for a command */

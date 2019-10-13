@@ -12,7 +12,14 @@ const DEFAULT_CATEGORY = 'Default'
 const logger = new Logger({
 	label: 'Aghanim',
 	timestamps: true,
-	levels: { dev: { style: 'magenta' } },
+	levels: { 
+		dev: { style: 'magenta' },
+		commandrunerror: { text: 'command:run:error', style: 'red' },
+		componentrunerror: { text: 'component:run:error', style: 'red' },
+		commandadderror: { text: 'command:add:error', style: 'red' },
+		componentadderror: { text: 'component:add:error', style: 'red' },
+		categoryadderror: { text: 'category:run:error', style: 'red' },
+	},
 	// ignoredLevels: [this.devLogs ? '' : 'dev']
 })
 /**
@@ -118,7 +125,7 @@ class Client extends Eris.Client {
 					}
 				})
 
-				this._handleEvent('ready')()
+				this.handleEvent('ready')()
 			})		
 		}).on('error', (err) => {
 			logger.error(err)
@@ -130,12 +137,12 @@ class Client extends Eris.Client {
 			 */
 			this.emit('aghanim:error', err, this)
 		}).on('messageCreate', this.handleMessage)
-			.on('messageReactionAdd', this._handleEvent('messageReactionAdd'))
-			.on('messageReactionRemove', this._handleEvent('messageReactionRemove'))
-			.on('guildCreate', this._handleEvent('guildCreate'))
-			.on('guildDelete', this._handleEvent('guildDelete'))
-			.on('guildMemberAdd', this._handleEvent('guildMemberAdd'))
-			.on('guildMemberRemove', this._handleEvent('guildMemberRemove'))
+			.on('messageReactionAdd', this.handleEvent('messageReactionAdd'))
+			.on('messageReactionRemove', this.handleEvent('messageReactionRemove'))
+			.on('guildCreate', this.handleEvent('guildCreate'))
+			.on('guildDelete', this.handleEvent('guildDelete'))
+			.on('guildMemberAdd', this.handleEvent('guildMemberAdd'))
+			.on('guildMemberRemove', this.handleEvent('guildMemberRemove'))
 
 		this.setup.helpMessage = `${options.helpMessage || '**Help**'}\n\n`
 		this.setup.helpMessageAfterCategories = `${options.helpMessageAfterCategories || `**Note**: Use \`${this.prefix}help <category>\` to see those commands`}\n\n`
@@ -144,7 +151,7 @@ class Client extends Eris.Client {
 			// Add default help command to bot
 			this.addCommand(new Command('help', {}, async (msg, args, client, command) => { /* eslint no-unused-vars: "off" */
 				const categories = client.categories.map(c => c.name.toLowerCase())
-				const query = args.from(1).toLowerCase();
+				const query = args.from(1).toLowerCase()
 				let { helpMessage } = client.setup
 				if (categories.includes(query)) {
 					const cmds = client.getCommandsFromCategories(query)
@@ -153,11 +160,21 @@ class Client extends Eris.Client {
 							.map(c => `**${c.name}** \`${client.prefix}help ${c.name.toLowerCase()}\` - ${c.help}`)
 							.join('\n') + '\n\n' + client.setup.helpMessageAfterCategories
 					} else {
-						helpMessage += cmds.filter(c => !c.hide).map(c => `\`${client.prefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${c.subcommands.length ? '\n' + c.subcommands.filter(s => !s.hide).map(s => `  · \`${s.name}${s.args ? ' ' + s.args : ''}\` - ${s.help}`).join('\n') : ''}`)
+						helpMessage += cmds.filter(c => !c.hide).map(c => `\`${client.prefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${c.childs.length ? '\n' + c.childs.filter(s => !s.hide).map(s => `  · \`${s.name}${s.args ? ' ' + s.args : ''}\` - ${s.help}`).join('\n') : ''}`)
 							.join('\n')
 					}
 				} else {
-					helpMessage += client.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${client.prefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + client.setup.helpMessageAfterCategories
+					if(categories.length){
+						helpMessage += client.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${client.prefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + client.setup.helpMessageAfterCategories
+					}else{
+						const cmds = client.getCommandsFromCategories("Default")
+						if (!cmds) {
+							helpMessage += "No commands"
+						} else {
+							helpMessage += cmds.filter(c => !c.hide).map(c => `\`${client.prefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${c.childs.length ? '\n' + c.childs.filter(s => !s.hide).map(s => `  · \`${s.name}${s.args ? ' ' + s.args : ''}\` - ${s.help}`).join('\n') : ''}`)
+								.join('\n')
+						}
+					}
 				}
 				if (!client.setup.helpDM) {
 					return msg.channel.createMessage(helpMessage)
@@ -175,61 +192,38 @@ class Client extends Eris.Client {
 	 */
 	async handleMessage(msg) {
 		if (!this.triggerMessageCreate(msg)) { return }
-		this._handleEvent('messageCreate')(msg)
+		this.handleEvent('messageCreate')(msg)
 
 		if (this.ignoreBots && msg.author.bot) return
 
-		const [prefix, content] = this.splitPrefixFromContent(msg)
-		if( typeof prefix !== 'string' || typeof content !== 'string') return
-
-		const args = content.split(' ')
-		const commandName = args[0]
-		const subCommandName = args[1]
-		/**
-		 * Message is spit for spaces (' ')
-		 * @typedef args
-		 * @prop {string} prefix - Message prefix
-		 * @prop {string} content - Message content
-		 * @prop {function} from - Splice message content from argument number to end message
-		 * @prop {function} until - Splice message content from begin until argument number
-		 * @prop {function} after - Same content
-		 * @prop {array} - Each word form message is in a slot
-		 */
-		args.prefix = prefix
-		args.content = content
-		args.from = arg => msg.content.replace(`${args.prefix}${args.slice(0, arg).join(' ')} `, '')
-		args.until = arg => args.prefix + args.slice(0, arg).join(' ')
-		args.after = args.from(1)
-		args.client = this
-
-		this.commandArgsMiddleware(args, msg)
-
-		const command = this.commandForName(commandName, subCommandName)
-		if (!command) return
-		if (!command.enable) return
-		if (command.guildOnly && msg.channel.type !== 0) return
-		if (command.dmOnly && msg.channel.type !== 1) return
-		if (command.userOnly && !command.userOnly.includes(msg.author.id)) return
-		if (command.ownerOnly && msg.author.id !== this.owner.id) return
-		if (command.rolesCanUse && !this.checkRolesCanUse(msg, command.rolesCanUse)) return
-		if (command.permissions && !this.checkHasPermissions(msg, command.permissions)) return
-		if (command.cooldown) {
-			const cd = command.getCooldown(msg.author.id)
-			if (cd > 0) {
-				if (typeof command.cooldownMessage === 'string') {
-					return msg.channel.createMessage(command.cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username))
-				} else if (typeof command.cooldownMessage === 'function') {
-					const cooldownMessage = command.cooldownMessage(msg, args, this, cd)
-					if (typeof cooldownMessage === 'string') { msg.channel.createMessage(cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username)) }
-					return
-				}
-			}
-		}	
+		const { command, args } = this.commandParse(msg)
 		
 		try {
+			if (!command || !args ) return
+			if (!command.enable) return
 			if (command.check && await !command.check(msg, args, this, command)) return
+			if (command.guildOnly && msg.channel.type !== 0) return
+			if (command.dmOnly && msg.channel.type !== 1) return
+			if (command.userOnly && !command.userOnly.includes(msg.author.id)) return
+			if (command.ownerOnly && msg.author.id !== this.owner.id) return
+			if (command.rolesCanUse && !this.checkRolesCanUse(msg, command.rolesCanUse)) return
+			if (command.permissions && !this.checkHasPermissions(msg, command.permissions)) return
+			if (command.cooldown) {
+				const cd = command.getCooldown(msg.author.id)
+				if (cd > 0) {
+					if (typeof command.cooldownMessage === 'string') {
+						return msg.channel.createMessage(command.cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username))
+					} else if (typeof command.cooldownMessage === 'function') {
+						const cooldownMessage = command.cooldownMessage(msg, args, this, cd)
+						if (typeof cooldownMessage === 'string') { 
+							return msg.channel.createMessage(cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username)) 
+						}
+						return
+					}
+				}
+			}	
 			/**
-			 * Fired before a command is executed
+			 * Fired before a command is executed. Don't cant stop command of running
 			 * @event Client#aghanim:command:beforerun
 			 * @param {object} msg - Eris Message object
 			 * @param {args} args - Args object
@@ -241,9 +235,9 @@ class Client extends Eris.Client {
 			if (command.cooldown) {
 				command.setCooldown(msg.author.id)
 			}
-			if (command.cooldown || command.await) {
-				if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
-			}
+			// if (command.cooldown || command.await) {
+			// 	if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
+			// }
 		}catch(err) {
 			/**
 			 * Fired when a command got an error executing the run function
@@ -254,13 +248,13 @@ class Client extends Eris.Client {
 			 * @param {Client} client - Client instance
 			 * @param {Command} command - Command
 			 */
-			logger.error('Error Command =>', err)
-			this.emit('aghanim:command:error', err, msg, args, client, command)
+			logger.commnadrunerror(`${command.name} - ${err}`)
+			this.emit('aghanim:command:error', err, msg, args, this, command)
 		}
 
 	}
 
-	_handleEvent(eventname) {
+	handleEvent(eventname) {
 		return (...args) => {
 			Object.keys(this.components)
 				.map(componentName => this.components[componentName])
@@ -269,7 +263,7 @@ class Client extends Eris.Client {
 					try {
 						await component[eventname](...args, this)
 					} catch (err) {
-						logger.error(`${component.constructor.name} got an error. => ${err}`)
+						logger.componentrunerror(`${component.constructor.name} (${eventname}) - ${err}`)
 						/**
 						 * Fired when a component get an error to be executed
 						 * @event Client#aghanim:component:error
@@ -278,7 +272,7 @@ class Client extends Eris.Client {
 						 * @param {Client} client - Client instance
 						 * @param {Component} component - Component
 						 */
-						this.emit('aghanim:component:error', err, eventname, client, component)
+						this.emit('aghanim:component:error', err, eventname, this, component)
 					}
 				})
 		}
@@ -295,36 +289,39 @@ class Client extends Eris.Client {
 
 	/**
 	 * Register a command to the client.
-	 * @param {Command} command - The command to add to the bot.
+	 * @param {Command | object} command - The command to add to the bot.
 	 * @returns {Command} - Command added
 	 */
 	addCommand(command) {
+		if (!(command instanceof Command) && typeof(command) === 'object') { // allow command as object
+			command = new Command(command)
+		}
 		if (!(command instanceof Command)) throw new TypeError('Not a command')
 		if (!this.categories.find(c => c.name === command.category)) {
 			command.category = DEFAULT_CATEGORY
-			logger.warn(`${command.category} not found! Established as ${DEFAULT_CATEGORY} in ${command.name}`)
+			logger.warn(`Category not found for ${command.name}. Established as ${DEFAULT_CATEGORY}`)
 		}
 		command.client = this
-		if (!command.subcommandFrom) {
-			const cmd = this.commands.find(c => [c.name, ...c.aliases].some(cname => [command.name, ...command.aliases].includes(cname)))
+		if (!command.childOf) {
+			const cmd = this.commands.find(c => c.names.some(cname => [command.name, ...command.aliases].includes(cname)))
 			if (cmd) {
-				throw new Error('Command exists', command.name)
+				logger.commandadderror(`Command exists: ${command.name}`)
 			} else {
 				this.commands.push(command)
 				logger.dev(`Command added: ${command.name}`) 
 				return command
 			}
 		} else {
-			const cmd = this.commands.find(c => [c.name, ...c.aliases].includes(command.subcommandFrom))
+			const cmd = this.commands.find(c => c.names.includes(command.childOf))
 			if (!cmd) { 
-				throw new Error('Upcommand not found', command.subcommandFrom) 
+				throw new Error(`Parent command ${command.childOf} not found for ${command.name}`) 
 			} else {
 				if (command.category !== cmd.category) {
 					command.category = cmd.category
 					logger.warn(`${command.category} not same upcomand! Established as ${cmd.category}`)
 				}
-				command.upcommand = cmd
-				cmd.subcommands.push(command)
+				command.parent = cmd
+				cmd.childs.push(command)
 				logger.dev(`Subcommand added: ${command.name} from ${cmd.name}`)
 				return command
 			}
@@ -352,7 +349,7 @@ class Client extends Eris.Client {
 			command.filename = filename
 			this.addCommand(command)
 		} catch (err) {
-			logger.error(err)
+			logger.commandadderror(`${err} on ${filename}`)
 		}
 	}
 
@@ -367,22 +364,34 @@ class Client extends Eris.Client {
 	addCategory(name, help, options) {
 		const category = new Category(name, help, options)
 		if (this.categories.find(c => c.name === category.name)) {
-			throw new Error(`Category ${category.name} exists`)
+			logger.categoryadderror(`${category.name} exists`)
 		} else {
-			this.categories.push(category); logger.dev(`Category added: ${category.name}`)
+			this.categories.push(category);
+			logger.dev(`Category added: ${category.name}`)
 		}
 	}
 
 	/**
 	 * Add a Component
-	 * @param {Component} component - Component {@link Component}
+	 * @param {Component | object} component - Component {@link Component}
 	 * @returns {Component | undefined} - Component added
 	 */
 	addComponent(component, options) {
+		if (!(component instanceof Component) && typeof(component) === 'object') { // allow load components as object
+			const componentObject = component
+			if(!componentObject.name) throw new TypeError(`Component as object require an name => ${JSON.stringify(componentObject)}`)
+			component = class extends Component{
+				constructor(client, options){
+					super(client)
+				}
+			}
+			Object.defineProperty(component, "name", { value: componentObject.name })
+			Object.keys(componentObject).filter(key => key !== "name").forEach(key => component.prototype[key] = componentObject[key])
+		}
 		if (!(component.prototype instanceof Component)) throw new TypeError(`Not a Component => ${component}`)
 		if (this.components[component.name]) { throw new Error(`Component exists => ${component.name}`) }
 		try {
-			const instanceComponent = new component(this,options) /* eslint new-cap: "off" */
+			const instanceComponent = new component(this, options) /* eslint new-cap: "off" */
 			if (instanceComponent.enable) {
 				this.components[component.name] = instanceComponent
 				logger.dev(`Component Added: ${component.name}`)
@@ -391,7 +400,7 @@ class Client extends Eris.Client {
 				logger.warn(`Component Disabled: ${component.name}`)
 			}
 		} catch (err) {
-			logger.error(err)
+			logger.componentadderror(`${component.name} - ${err}`)
 		}
 	}
 
@@ -407,7 +416,7 @@ class Client extends Eris.Client {
 				component.filename = filename
 			}
 		} catch (err) {
-			logger.error(err)
+			logger.componentadderror(`${err} on ${filename}`)
 		}
 	}
 
@@ -427,13 +436,13 @@ class Client extends Eris.Client {
 	 * `addCommandDir`. Useful for development to hot-reload commands as you work
 	 * on them.
 	 */
-	reloadCommands() { //TODO: subcommands not supported
+	reloadCommands() { 
 		 const filenames = this.commands.reduce((filenames, command) => {
 			if (command.filename) {
 				filenames.push(command.filename)
 			}
-			if (command.subcommands.length > 0) {
-				command.subcommands.forEach(subcommand => {
+			if (command.childs.length > 0) {
+				command.childs.forEach(subcommand => {
 					if (subcommand.filename) {
 						filenames.push(subcommand.filename)
 					}
@@ -450,16 +459,16 @@ class Client extends Eris.Client {
 	 * `addCommponentDir`. Useful for development to hot-reload commands as you work
 	 * on them.
 	 */
-	reloadComponents() { //TODO: subcommands not supported
+	reloadComponents() { 
 		const filenames = Object.keys(this.components).map(key => this.components[key]).reduce((filenames, component) => {
 			if (component.filename) {
 			   filenames.push(component.filename)
 		   }
 		   return filenames
 	   }, [])
-	   this.components = []
+	   this.components = {}
 	   filenames.forEach(filename => this.addComponentFile(filename))
-	   this._handleEvent('ready')()
+	   this.handleEvent('ready')()
    }
 
 	/**
@@ -470,10 +479,10 @@ class Client extends Eris.Client {
 	 * @return {Command|undefined}
 	 */
 	commandForName(command, subcommand) {
-		const cmd = this.commands.find(c => [c.name, ...c.aliases].includes(command))
+		const cmd = this.commands.find(c => c.names.includes(command))
 		if (!cmd) return
 		if (subcommand) {
-			const scmd = cmd.subcommands.find(c => [c.name, ...c.aliases].includes(subcommand))
+			const scmd = cmd.childs.find(c => c.names.includes(subcommand))
 			return scmd || cmd
 		}
 		return cmd
@@ -500,15 +509,15 @@ class Client extends Eris.Client {
 		// Traditional prefix handling - if there is no prefix, skip this rule
 		const prefix = this.prefixForMessage(msg) // TODO: guild config
 		if (prefix !== undefined && msg.content.startsWith(prefix)) {
-			return [prefix, msg.content.substr(prefix.length)]
+			return {prefix, content: msg.content.substr(prefix.length)}
 		}
 		// Allow mentions to be used as prefixes according to config
 		const match = msg.content.match(this.mentionPrefixRegExp)
 		if (this.allowMention && match) { // TODO: guild config
-			return [match[0], msg.content.substr(match[0].length)]
+			return {prefix: match[0], content: msg.content.substr(match[0].length)}
 		}
 		// we got nothing
-		return [null, null]
+		return {prefix: undefined, content: msg.content}
 	}
 
 	findCategories(categories) {
@@ -521,7 +530,7 @@ class Client extends Eris.Client {
 	/**
 	 * Get Commands from a Category
 	 * @param  {(string|string[])} categories - Category or list of these to search commands
-	 * @return {Command[]|null} - Array of {@link Command} (include subcommands)
+	 * @return {Command[]|null} - Array of {@link Command} (include childs commands aka subcommands)
 	 */
 	getCommandsFromCategories(categories) {
 		if (!Array.isArray(categories)) {
@@ -559,6 +568,42 @@ class Client extends Eris.Client {
 	triggerMessageCreate(msg) {
 		return true
 	}
+	
+	/**
+	 * If returns true, allow default commands management.
+	 * @param  {Eris.message} msg - Eris Message object
+	 * @return {{args, comman}} - 
+	 */
+	commandParse(msg) {
+		const {prefix, content} = this.splitPrefixFromContent(msg)
+		if( typeof prefix !== 'string' || typeof content !== 'string') return
+
+		const args = content.split(' ').map(word => word.trim())
+		const command = this.commandForName(args[0], args[1])
+		if(!command){return {args, command: undefined}}
+		/**
+		 * Message is spit for spaces (' ')
+		 * @typedef args
+		 * @prop {string} prefix - Message prefix
+		 * @prop {string} content - Message content
+		 * @prop {function} from - Splice message content from argument number to end message
+		 * @prop {function} until - Splice message content from begin until argument number
+		 * @prop {function} after - Same content
+		 * @prop {Client} client - Client instance
+		 * @prop {array} - Each word form message is in a slot
+		 */
+		args.prefix = prefix
+		args.content = content
+		args.from = arg => msg.content.replace(`${args.prefix}${args.slice(0, arg).join(' ')} `, '')
+		args.until = arg => args.prefix + args.slice(0, arg).join(' ')
+		args.after = args.from(1)
+		args.client = this
+		args.command = args[0]
+		args.subcommand = args[1]
+		this.commandArgsMiddleware(args, msg)
+		return { args, command }
+	}
+
 	// /**
 	//  * Creates a message. If the specified message content is longer than 2000
 	//  * characters, splits the message intelligently into chunks until each chunk

@@ -8,6 +8,7 @@ __Author__ : [Desvelao^^](https://desvelao.github.io/profile/)  __Version__: `v0
 - Support for Subcommands (Command should be exist)
 - Commands with user cooldown
 - Add Components that can fire at some Eris events or add custom functionality to your bot
+- Commands and Components portability
 
 ## Using the bot
 

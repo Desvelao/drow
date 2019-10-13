@@ -62,5 +62,5 @@ If you need listen more events of that Aghanim do fby default you can do it
 client.on(eventName, handler)
 
 // or if you want add Aghanim functionality through components
-client.on(eventName, client._handleEvent(eventName)) // that add client as last argument to event handler
+client.on(eventName, client.handleEvent(eventName)) // that add client as last argument to event handler
 ```
