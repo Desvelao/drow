@@ -4,6 +4,7 @@ const Command = require('./Command');
 const Category = require('./Category');
 const Component = require('./Component');
 const Logger = require('./Logger')
+const CommandRequirementsCreators = require('./requirements')
 
 /**
  * Aghanim module to create a Command Client for {@link https://abal.moe/Eris/docs/getting-started Eris} using nodejs!
@@ -24,3 +25,6 @@ module.exports.Component = Component;
 module.exports.Eris = Eris;
 /** @prop {Logger} Component See {@link https://github.com/Geo1088/another-logger another-logger} */
 module.exports.Logger = Logger;
+/** @prop {CommandRequirementsCreators} CommandRequirementsCreators See {@link https://desvelao.github.com/aghanim CommandRequirements} */
+module.exports.CommandRequirementsCreators = CommandRequirementsCreators;
+

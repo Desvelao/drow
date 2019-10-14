@@ -5,6 +5,7 @@ const Command = require('./Command')
 const Category = require('./Category')
 const Component = require('./Component')
 const reload = require('require-reload')(require)
+const BuiltinCommandRequirements = require('./requirements')
 
 const DEFAULT_CATEGORY = 'Default'
 
@@ -70,6 +71,7 @@ class Client extends Eris.Client {
 		this.setup = {}
 
 		this._ready = false
+		this._commandsRequirements = {}
 
 		/** @prop {boolean} - Whether or not the bot can respond to messages
 		 * starting with a mention of the bot. Defaults to true. */
@@ -154,7 +156,7 @@ class Client extends Eris.Client {
 				const query = args.from(1).toLowerCase()
 				let { helpMessage } = client.setup
 				if (categories.includes(query)) {
-					const cmds = client.getCommandsFromCategories(query)
+					const cmds = client.getCommandsOfCategories(query)
 					if (!cmds) {
 						helpMessage += client.categories.filter(c => !c.hide) /* eslint prefer-template: "off", max-len: "off" */
 							.map(c => `**${c.name}** \`${client.prefix}help ${c.name.toLowerCase()}\` - ${c.help}`)
@@ -167,7 +169,7 @@ class Client extends Eris.Client {
 					if(categories.length){
 						helpMessage += client.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${client.prefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + client.setup.helpMessageAfterCategories
 					}else{
-						const cmds = client.getCommandsFromCategories("Default")
+						const cmds = client.getCommandsOfCategories("Default")
 						if (!cmds) {
 							helpMessage += "No commands"
 						} else {
@@ -196,32 +198,60 @@ class Client extends Eris.Client {
 
 		if (this.ignoreBots && msg.author.bot) return
 
-		const { command, args } = this.commandParse(msg)
+		const { command, args } = this.parseCommand(msg)
 		
 		try {
 			if (!command || !args ) return
-			if (!command.enable) return
-			if (command.check && await !command.check(msg, args, this, command)) return
-			if (command.guildOnly && msg.channel.type !== 0) return
-			if (command.dmOnly && msg.channel.type !== 1) return
-			if (command.userOnly && !command.userOnly.includes(msg.author.id)) return
-			if (command.ownerOnly && msg.author.id !== this.owner.id) return
-			if (command.rolesCanUse && !this.checkRolesCanUse(msg, command.rolesCanUse)) return
-			if (command.permissions && !this.checkHasPermissions(msg, command.permissions)) return
-			if (command.cooldown) {
-				const cd = command.getCooldown(msg.author.id)
-				if (cd > 0) {
-					if (typeof command.cooldownMessage === 'string') {
-						return msg.channel.createMessage(command.cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username))
-					} else if (typeof command.cooldownMessage === 'function') {
-						const cooldownMessage = command.cooldownMessage(msg, args, this, cd)
-						if (typeof cooldownMessage === 'string') { 
-							return msg.channel.createMessage(cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username)) 
-						}
-						return
-					}
-				}
-			}	
+			const notpass = !(await command.checkRequirements(msg, args, this, command))
+			// console.log('PASS',pass)
+			if(notpass) return
+			
+			/* Check command requirements*/
+			// if(command.requirements.length){
+			// 	for(let i= 0, length = command.requirements.length; i < length; i++){
+			// 		const requirement = command.requirements[i]
+			// 		if(typeof(requirement) === 'object'){
+			// 			if(await !requirement.condition(msg, args, this, command, requirement)){ // If no pass requirement, cancel running command
+			// 				if(["string", "object"].includes(typeof(requirement.response))){
+			// 					return await msg.channel.createMessage(requirement.response) // Response to message
+			// 				}else if(typeof(requirement.response) === "function"){
+			// 					const res = await requirement.response(msg, args, this, command, requirement) 
+			// 					return await msg.channel.createMessage(res) // Response to message
+			// 				}else if(["string", "object"].includes(typeof(requirement.responseDM))){
+			// 					return await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
+			// 				}else if(typeof(requirement.response) === "function"){
+			// 					const res = await requirement.responseDM(msg, args, this, command, requirement) 
+			// 					return await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
+			// 				}else if(typeof(requirement.run) === "function"){
+			// 					return await requirement.run(msg, args, this, command, requirement) // Custom
+			// 				}
+			// 				return // Cancel running if not response/responseDM/run
+			// 			}
+			// 		}
+			// 	}
+			// }
+			// if (command.check && await !command.check(msg, args, this, command)) return
+			// if (command.guildOnly && doUnless(!isGuildFromMessage(msg), () => sendResponse(msg, ))) return
+			// if (command.dmOnly && !isDMFromMessage(msg)) return
+			// if (command.user.include && await !command.user.include.do(msg)) return
+			// if (command.user.exclude && await !command.user.exclude.do(msg)) return
+			// if (command.ownerOnly && msg.author.id !== this.owner.id) return
+			// if (command.roles && isGuildFromMessage(msg) && !this.checkMemberHasRole(msg.channel.guild.id, msg.author.id, command.roles)) return
+			// if (command.permissions && isGuildFromMessage(msg) && !this.checkMemberHasPermissions(msg.channel.guild.id, msg.author.id, command.permissions)) return
+			// if (command.cooldown) {
+			// 	const cd = command.getCooldown(msg.author.id)
+			// 	if (cd > 0) {
+			// 		if (typeof command.cooldownMessage === 'string') {
+			// 			return msg.channel.createMessage(command.cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username))
+			// 		} else if (typeof command.cooldownMessage === 'function') {
+			// 			const cooldownMessage = command.cooldownMessage(msg, args, this, cd)
+			// 			if (typeof cooldownMessage === 'string') { 
+			// 				return msg.channel.createMessage(cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username)) 
+			// 			}
+			// 			return
+			// 		}
+			// 	}
+			// }	
 			/**
 			 * Fired before a command is executed. Don't cant stop command of running
 			 * @event Client#aghanim:command:beforerun
@@ -232,9 +262,10 @@ class Client extends Eris.Client {
 			 */
 			this.emit('aghanim:command:beforerun', msg, args, this, command)
 			const val = await command.run(msg, args, this, command)
-			if (command.cooldown) {
-				command.setCooldown(msg.author.id)
-			}
+			await command.runHook('executed', msg, args, this, command)
+			// if (command.cooldown) {
+			// 	command.setCooldown(msg.author.id)
+			// }
 			// if (command.cooldown || command.await) {
 			// 	if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
 			// }
@@ -248,7 +279,7 @@ class Client extends Eris.Client {
 			 * @param {Client} client - Client instance
 			 * @param {Command} command - Command
 			 */
-			logger.commnadrunerror(`${command.name} - ${err}`)
+			logger.commandrunerror(`${command.name} - ${err} - ${err.stack}`)
 			this.emit('aghanim:command:error', err, msg, args, this, command)
 		}
 
@@ -302,6 +333,34 @@ class Client extends Eris.Client {
 			logger.warn(`Category not found for ${command.name}. Established as ${DEFAULT_CATEGORY}`)
 		}
 		command.client = this
+		const requirements = command.requirements
+		command.requirements = []
+		requirements.forEach(req => {
+			// if(typeof(req) !== 'object'){throw new TypeError(`Requirement: ${req}`)}
+			if(typeof(req) === 'string'){
+				if(BuiltinCommandRequirements[req]){
+					const commandReq = BuiltinCommandRequirements[req]({command, client: this})
+					commandReq.type = req
+					command.addRequirement(commandReq)
+				}else if(this._commandsRequirements[req]){
+					if(typeof(this._commandsRequirements[req]) === "object"){
+						command.addRequirement(this._commandsRequirements[req])
+					}else if(typeof(this._commandsRequirements[req]) === "function"){
+						command.addRequirement(this._commandsRequirements[req](command, this))
+					}
+				}
+			}else if(typeof(req) === 'object'){
+				if(BuiltinCommandRequirements[req.type]){
+					const commandReq = BuiltinCommandRequirements[req.type]({...req, command, client: this})
+					commandReq.type = req.type
+					command.addRequirement(commandReq)
+				}else{
+					command.addRequirement(req)
+				}
+			}else{
+				throw new TypeError(`Requirement: ${req} on ${command.name}`)
+			}
+		})
 		if (!command.childOf) {
 			const cmd = this.commands.find(c => c.names.some(cname => [command.name, ...command.aliases].includes(cname)))
 			if (cmd) {
@@ -382,11 +441,14 @@ class Client extends Eris.Client {
 			if(!componentObject.name) throw new TypeError(`Component as object require an name => ${JSON.stringify(componentObject)}`)
 			component = class extends Component{
 				constructor(client, options){
-					super(client)
+					super(client, options)
+					if(typeof(componentObject.constructor) === 'function'){
+						componentObject.constructor(client, options)
+					}
 				}
 			}
-			Object.defineProperty(component, "name", { value: componentObject.name })
-			Object.keys(componentObject).filter(key => key !== "name").forEach(key => component.prototype[key] = componentObject[key])
+			Object.defineProperty(component, 'name', { value: componentObject.name })
+			Object.keys(componentObject).filter(key => key !== 'name').forEach(key => component.prototype[key] = componentObject[key])
 		}
 		if (!(component.prototype instanceof Component)) throw new TypeError(`Not a Component => ${component}`)
 		if (this.components[component.name]) { throw new Error(`Component exists => ${component.name}`) }
@@ -478,7 +540,7 @@ class Client extends Eris.Client {
 	 * @param {string} subcommand - The name of the subcommand to look for.
 	 * @return {Command|undefined}
 	 */
-	commandForName(command, subcommand) {
+	getCommandByName(command, subcommand) {
 		const cmd = this.commands.find(c => c.names.includes(command))
 		if (!cmd) return
 		if (subcommand) {
@@ -494,7 +556,7 @@ class Client extends Eris.Client {
 	 * @param {Object} msg - The message to check the prefix of.
 	 * @return {string}
 	 */
-	prefixForMessage(msg) {
+	getPrefixForMessage(msg) {
 		return this.prefix
 	}
 
@@ -507,7 +569,7 @@ class Client extends Eris.Client {
 	 **/
 	splitPrefixFromContent(msg) {
 		// Traditional prefix handling - if there is no prefix, skip this rule
-		const prefix = this.prefixForMessage(msg) // TODO: guild config
+		const prefix = this.getPrefixForMessage(msg) // TODO: guild config
 		if (prefix !== undefined && msg.content.startsWith(prefix)) {
 			return {prefix, content: msg.content.substr(prefix.length)}
 		}
@@ -520,7 +582,7 @@ class Client extends Eris.Client {
 		return {prefix: undefined, content: msg.content}
 	}
 
-	findCategories(categories) {
+	getCategoriesByName(categories) {
 		if (!Array.isArray(categories)) {
 			categories = [categories]
 		}
@@ -532,7 +594,7 @@ class Client extends Eris.Client {
 	 * @param  {(string|string[])} categories - Category or list of these to search commands
 	 * @return {Command[]|null} - Array of {@link Command} (include childs commands aka subcommands)
 	 */
-	getCommandsFromCategories(categories) {
+	getCommandsOfCategories(categories) {
 		if (!Array.isArray(categories)) {
 			categories = [categories]
 		}
@@ -541,19 +603,35 @@ class Client extends Eris.Client {
 		return cmds.length > 0 ? cmds : null
 	}
 
-	checkRolesCanUse(msg, rolesName) { /* eslint class-methods-use-this: "off" */
-		if (msg.channel.type !== 0) return
-		const member = msg.channel.guild.members.get(msg.author.id)
-		if (!member) return
-		const { roles } = member
-		if (typeof (rolesName) === 'string') { rolesName = [rolesName] }
-		rolesName = rolesName.map(r => r.toLowerCase())
-		return roles.find( r =>  rolesName.includes(msg.channel.guild.roles.get(r).name.toLowerCase()) )
+	/**
+	 * Define a requirement
+	 * @param  {(object|function)} requirement - Requirement to define
+	 */
+	defineCommandRequirement(requirement){
+		if(typeof(requirement) === 'object' && requirement.type){
+			console.log(`Defined req ${requirement.type}`,requirement)
+			this._commandsRequirements[requirement.type] = requirement
+		}else if(typeof(requirement) === 'function'){
+			this._commandsRequirements[requirement.type] = requirement
+		}else{
+			logger.error('Error adding command requirement')
+		}
 	}
 
-	checkHasPermissions(msg, permissions) {
-		if (msg.channel.type !== 0) return
-		const member = msg.channel.guild.members.get(msg.author.id)
+	checkMemberHasRole(guildID, memberID, roles) { /* eslint class-methods-use-this: "off" */
+		const guild = this.guilds.get(guildID)
+		if(!guild) return
+		const member = guild.members.get(memberID)
+		if (!member) return
+		if (typeof (roles) === 'string') { roles = [roles] }
+		roles = roles.map(r => r.toLowerCase())
+		return member.roles.find( r => roles.includes(msg.channel.guild.roles.get(r).name.toLowerCase()) )
+	}
+
+	checkMemberHasPermissions(guildID, memberID, permissions) {
+		const guild = this.guilds.get(guildID)
+		if(!guild) return
+		const member = guild.members.get(memberID)
 		if (!member) return
 		return !Object.keys(permissions)
 			.map(p => ({name : p, enable : permissions[p]}))
@@ -574,12 +652,12 @@ class Client extends Eris.Client {
 	 * @param  {Eris.message} msg - Eris Message object
 	 * @return {{args, comman}} - 
 	 */
-	commandParse(msg) {
+	parseCommand(msg) {
 		const {prefix, content} = this.splitPrefixFromContent(msg)
 		if( typeof prefix !== 'string' || typeof content !== 'string') return
 
 		const args = content.split(' ').map(word => word.trim())
-		const command = this.commandForName(args[0], args[1])
+		const command = this.getCommandByName(args[0], args[1])
 		if(!command){return {args, command: undefined}}
 		/**
 		 * Message is spit for spaces (' ')

@@ -31,11 +31,26 @@ module.exports = new Command('ping', {
 const { Command } = require('aghanim')
 
 module.exports = new Command('pong', {
-  subcommandFrom : 'ping', // Upper/Parent command Command. It should be defined before add this subcommand
+  childOf : 'ping', // Upper/Parent command Command. It should be defined before add this subcommand
   category : 'Fun', help : 'Get Pong!', args : ''},
   async function (msg, args, client, command) {
   	msg.channel.createMessage('Pong!')
 })
 
 // This command will be fired with `[botPrefix]ping pong`
+```
+
+### Command Object
+
+Create a command as object
+```js
+module.exports = {
+	name: 'ping',
+	category: 'Fun',
+	help: 'Get Pong!',
+	args: '',
+	run: async (msg, args, client, command){
+		return msg.channel.createMesage('Pong')
+	}
+}
 ```

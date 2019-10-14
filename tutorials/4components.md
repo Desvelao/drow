@@ -16,7 +16,7 @@ class MyComponent extends Component{
 	ready(){
 		console.log('My component is ready')
 	}
-	messageCreate(msg, args, command){
+	messageCreate(msg, args, client, command){
 		console.log(`Message: ${msg.content}`)
 		// this.client is Aghanim Client instance. You can use it here
 	}
@@ -37,6 +37,26 @@ module.exports = MyComponent
 
 	//Or you can import a directory of components with addComponentDir method
 	client.addComponentDir(__dirname + '/path/to/components_folder')
+```
+
+### Component Object
+
+Create a component as object
+```js
+//my_componnet.js
+module.exports = {
+	name: 'ping',
+	constructor: (client, options) => {
+
+	}
+	ready: () => {
+		console.log('My component is ready')
+	}
+	help: 'Get Pong!',
+	messageCreate(msg, args, client, command){
+		console.log(`Message: ${msg.content}`)
+	}
+}
 ```
 
 ### Methods of events in components

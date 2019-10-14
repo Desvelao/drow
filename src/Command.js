@@ -1,3 +1,4 @@
+const CommandRequirements = require('./requirements')
 /** Class representing a command. */
 class Command {
 	/**
@@ -11,15 +12,21 @@ class Command {
    * @param {boolean} [options.dmOnly=false] - Command only can works in dm messages
    * @param {string|array} [options.userOnly=false] - Command only can works in these users
    * @param {boolean} [options.ownerOnly=false] - Command only can works in bot owner
-   * @param {string|array} [options.rolesCanUse=false] - Command only can works in guilds
+   * @param {string|array} [options.roles=false] - Command only can works in guilds
    * and members with roles
    * @param {Command~check} [options.check=null] - Command only can works if this
    * funciton return true
    * @param {array|object} [options.permissions=null] - Command only can works if member
    * in fuild has permissions
-   * @param {number} [options.cooldown=null] - Time in seconds
-   * @param {string} [options.cooldownMessage='Not yet! Ready in **<cd>**s'] -
-   * Message sent if command is in cooldown for that user
+   * @param {object} [options.userCooldown={}] - User cooldown
+   * @param {number} [options.userCooldown.time] - Time in seconds
+   * @param {string | function} [options.userCooldown.message='Not yet! Ready in **<cd>**s'] - Message sent if command is in cooldown for that user
+   * @param {object} [options.guildCooldown={}] - Guild cooldown
+   * @param {number} [options.guildCooldown.time] - Time in seconds
+   * @param {string | function} [options.guildCooldown.message='Not yet! Ready in **<cd>**s'] - Message sent if command is in cooldown for that guild
+   * @param {object} [options.channelCooldown={}] - Guild cooldown
+   * @param {number} [options.channelCooldown.time] - Time in seconds
+   * @param {string | function} [options.channelCooldown.message='Not yet! Ready in **<cd>**s'] - Message sent if command is in cooldown for that guild
    * @param {string} [options.childOf=undefined] -
    * Name of command that this commad is subcommand. It needs exists.
    * @param {string} [options.category='Default'] - Category from this command
@@ -55,32 +62,16 @@ class Command {
 		this.run = run || options.run || async function(){}
 		/** @prop {string} - Description of command */
 		this.help = options.help || ''
-		/** @prop {Command[]} - Subcommands of Command. */
-		this.childs = []
 		/** @prop {Command | undefined} - Parent Command */
 		this.parent = undefined
-		/** @prop {boolean} - Command responds to guilds messages */
-		this.guildOnly = options.guildOnly || false
-		/** @prop {boolean} - Command responds only to dm messages */
-		this.dmOnly = options.dmOnly || false
-		/** @prop {(false|string|string[])} - Command responds to specific users messages. False by default.*/
-		this.userOnly = typeof options.userOnly === 'string' ? [options.userOnly] : (Array.isArray(options.userOnly)) ? options.userOnly : false /* eslint no-nested-ternary : "off" */
-		/** @prop {boolean} - Command responds to owner messages */
-		this.ownerOnly = options.ownerOnly || false
-		/** @prop {(false|string|string[])} -
-		 * Command responds to specific members with roles. Message should be sent from a guild */
-		this.rolesCanUse = options.rolesCanUse || false
-		/** @prop {Command~check} - Custom requirements to execute the command */
-		this.check = options.check || null
-		/** @prop {(undefined|string[])} - Array of permissions in strings */
-		this.permissions = options.permissions || null
-		/** @prop {number|null} - Time in seconds that Command has cooldown for a user */
-		this.cooldown = options.cooldown || null
-		/** @prop {{string: number}} - Users cooldown */
-		this.cooldowns = {}
-		/** @prop {string} -
-		 * Message to responds when a Command is on cooldown. Replace "<cd>" for seconds remaining */
-		this.cooldownMessage = options.cooldownMessage || 'Not yet! Ready in **<cd>**s'
+		/** @prop {Command[]} - Subcommands of Command. */
+		this.childs = []
+		/** @prop {array} - Command Requirements */
+		this.requirements = options.requirements || [] // TODO:secure is array or convert one to array
+		/** @prop {object} - Command Hooks */
+		this.hooks = options.hooks || { // TODO:secure is array or convert one to array and hooks structure
+			executed: []
+		}
 		/** @prop {string|undefined} - Name of uppercomand */
 		this.childOf = options.childOf
 		/** @prop {string} - Command category. It should exist if not, will be 'Default' */
@@ -91,8 +82,6 @@ class Command {
 		this.hide = options.hide !== undefined ? options.hide : false // Hide command from help command
 		/** @prop {boolean} - Enable/Disable the command */
 		this.enable = options.enable !== undefined ? options.enable : true // Enable or disable command
-		/** @prop {boolean} - Await result comand and warning if return is undefined. */
-		this.await = options.await !== undefined ? options.await : false
 		/** @prop {Client} - Client instance */
 		this.client = undefined
 	}
@@ -140,24 +129,51 @@ class Command {
 		return [this.name, ...this.aliases]
 	}
 
-	/**
-	 * Get cooldown for user
-	 * @param  {string} id - User id
-	 * @return {number}    - Time in seconds that command is in cooldown for that user
-	 */
-	getCooldown(id) {
-		return this.cooldowns[id] - Math.round(new Date().getTime() / 1000)
+	/** Register a requirement */
+	addRequirement(requirement) {
+		console.log(`Adding command requirement ${requirement.type} for ${this.name}`)
+		requirement.remove = () => this.removeRequirement(requirement)
+		this.requirements.push(requirement)
+		if(requirement.init){
+			requirement.init(this.client, this, requirement)
+		}
 	}
 
-	/**
-	 * Set cooldown for user
-	 * @param {string} id - User id
-	 * @param {number} [cd] - Set cooldown. If cd is defined, set to timestamp,
-	 * else add cooldown to now
-	 */
-	setCooldown(id, cd) {
-		this.cooldowns[id] = cd !== undefined ?
-			cd : Math.round(new Date().getTime() / 1000) + this.cooldown
+	/** Register a requirement */
+	removeRequirement(requirement) {
+		this.requirements = this.requirements.filter(requirement)
+	}
+
+	runHook(hookname, ...args){
+		this.hooks[hookname].forEach(hook => hook(...args))
+	}
+
+	async checkRequirements(msg, args, client, command){
+		if(!command.enable){ return false}
+		return this.requirements.reduce(async (result, requirement) => {
+			if(await !result){ return Promise.resolve(false) }
+			if(typeof(requirement) === 'object'){
+				const pass = (await requirement.condition(msg, args, client, command, requirement))
+				if(pass === false || (Array.isArray(pass) && pass[0] === false)){
+					const ctx = pass && pass[1]
+					if(["string", "object"].includes(typeof(requirement.response))){
+						await msg.channel.createMessage(requirement.response) // Response to message
+					}else if(typeof(requirement.response) === "function"){
+						const res = await requirement.response(msg, args, client, command, requirement, ctx) 
+						await msg.channel.createMessage(res) // Response to message
+					}else if(["string", "object"].includes(typeof(requirement.responseDM))){
+						await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
+					}else if(typeof(requirement.response) === "function"){
+						const res = await requirement.responseDM(msg, args, client, command, requirement, ctx) 
+						await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
+					}else if(typeof(requirement.run) === "function"){
+						await requirement.run(msg, args, client, command, requirement, ctx) // Custom
+					}
+					return Promise.resolve(false)
+				}
+			}
+			return Promise.resolve(result)
+		}, Promise.resolve(true))
 	}
 
 	/** Throw a command error */
@@ -165,5 +181,6 @@ class Command {
 		throw new Error(message)
 	}
 }
+
 
 module.exports = Command
