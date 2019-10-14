@@ -45,18 +45,18 @@ class Client extends Eris.Client {
 	* Message after categories in default command help message are shown
 	* @param {boolean} [options.helpDM = true] - Active direct message to default command help
 	* @param {boolean} [options.helpEnable = true] - Enable/disable default command help
-	* @param {boolean} [options.devLogs = false] - Enable/disable default command help
+	* @param {boolean} [options.devLogs = false] - Enable/disable aghanim dev logs
 	*/
 	constructor(token, options = {}) {
 		// Attempt to load options from aghanim.config.js(on) file
 		try {
 			options = require(`${process.cwd()}/aghanim.config`) /* eslint import/no-dynamic-require: "off", global-require : "off", no-param-reassign : "off" */
-			logger.info('Loading: aghanim.config.js(on)')
+			logger.info('Loaded: aghanim.config.js(on)')
 		} catch (err) { } /* eslint no-empty: "off" */
 
 		super(token, options)
-		this.devLogs = options.devLogs || false
-		logger._config.ignoredLevels = [this.devLogs ? '' : 'dev'] /* eslint no-underscore-dangle: "off" */
+		options.devLogs = options.devLogs || false
+		logger._config.ignoredLevels = [options.devLogs ? '' : 'dev'] /* eslint no-underscore-dangle: "off" */
 
 		/** @prop {string} - The prefix the bot will respond to in guilds
 		 * for which there is no other confguration. */
@@ -193,65 +193,20 @@ class Client extends Eris.Client {
 	 * @return {*} - Returns
 	 */
 	async handleMessage(msg) {
-		if (!this.triggerMessageCreate(msg)) { return }
+		if (!this._ready) return
+		if (!this.triggerMessageCreate(msg, client)) { return }
 		this.handleEvent('messageCreate')(msg)
 
 		if (this.ignoreBots && msg.author.bot) return
+		if (this.ignoreSelf && msg.author.id === this.user.id) return
 
 		const { command, args } = this.parseCommand(msg)
 		
 		try {
 			if (!command || !args ) return
 			const notpass = !(await command.checkRequirements(msg, args, this, command))
-			// console.log('PASS',pass)
 			if(notpass) return
-			
-			/* Check command requirements*/
-			// if(command.requirements.length){
-			// 	for(let i= 0, length = command.requirements.length; i < length; i++){
-			// 		const requirement = command.requirements[i]
-			// 		if(typeof(requirement) === 'object'){
-			// 			if(await !requirement.condition(msg, args, this, command, requirement)){ // If no pass requirement, cancel running command
-			// 				if(["string", "object"].includes(typeof(requirement.response))){
-			// 					return await msg.channel.createMessage(requirement.response) // Response to message
-			// 				}else if(typeof(requirement.response) === "function"){
-			// 					const res = await requirement.response(msg, args, this, command, requirement) 
-			// 					return await msg.channel.createMessage(res) // Response to message
-			// 				}else if(["string", "object"].includes(typeof(requirement.responseDM))){
-			// 					return await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
-			// 				}else if(typeof(requirement.response) === "function"){
-			// 					const res = await requirement.responseDM(msg, args, this, command, requirement) 
-			// 					return await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
-			// 				}else if(typeof(requirement.run) === "function"){
-			// 					return await requirement.run(msg, args, this, command, requirement) // Custom
-			// 				}
-			// 				return // Cancel running if not response/responseDM/run
-			// 			}
-			// 		}
-			// 	}
-			// }
-			// if (command.check && await !command.check(msg, args, this, command)) return
-			// if (command.guildOnly && doUnless(!isGuildFromMessage(msg), () => sendResponse(msg, ))) return
-			// if (command.dmOnly && !isDMFromMessage(msg)) return
-			// if (command.user.include && await !command.user.include.do(msg)) return
-			// if (command.user.exclude && await !command.user.exclude.do(msg)) return
-			// if (command.ownerOnly && msg.author.id !== this.owner.id) return
-			// if (command.roles && isGuildFromMessage(msg) && !this.checkMemberHasRole(msg.channel.guild.id, msg.author.id, command.roles)) return
-			// if (command.permissions && isGuildFromMessage(msg) && !this.checkMemberHasPermissions(msg.channel.guild.id, msg.author.id, command.permissions)) return
-			// if (command.cooldown) {
-			// 	const cd = command.getCooldown(msg.author.id)
-			// 	if (cd > 0) {
-			// 		if (typeof command.cooldownMessage === 'string') {
-			// 			return msg.channel.createMessage(command.cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username))
-			// 		} else if (typeof command.cooldownMessage === 'function') {
-			// 			const cooldownMessage = command.cooldownMessage(msg, args, this, cd)
-			// 			if (typeof cooldownMessage === 'string') { 
-			// 				return msg.channel.createMessage(cooldownMessage.replace(new RegExp('<cd>', 'g'), cd).replace(new RegExp('<username>', 'g'), msg.author.username)) 
-			// 			}
-			// 			return
-			// 		}
-			// 	}
-			// }	
+	
 			/**
 			 * Fired before a command is executed. Don't cant stop command of running
 			 * @event Client#aghanim:command:beforerun
@@ -261,14 +216,60 @@ class Client extends Eris.Client {
 			 * @param {Command} command - Command
 			 */
 			this.emit('aghanim:command:beforerun', msg, args, this, command)
-			const val = await command.run(msg, args, this, command)
+			await command.runHook('pre', msg, args, this, command)
+			if(command.response){
+				switch(typeof(command.response)){
+					case "string":{
+						await msg.channel.createMessage(command.response)
+						break
+					}
+					case "function":{
+						const response = command.response(msg, args, this, command)
+						await msg.channel.createMessage(response)
+						break
+					}
+					case "object":{
+						await msg.channel.createMessage(command.response)
+						break
+					}
+					default:{
+
+					}
+				}
+			}else if(command.responseDM){
+				switch(typeof(command.responseDM)){
+					case "string":{
+						await msg.channel.createMessage(command.responseDM)
+						break
+					}
+					case "function":{
+						const responseDM = command.responseDM(msg, args, this, command)
+						await msg.channel.createMessage(responseDM)
+						break
+					}
+					case "object":{
+						await msg.channel.createMessage(command.responseDM)
+						break
+					}
+					default:{
+						
+					}
+				}
+			}else{
+				const val = await command.run(msg, args, this, command)
+				// 	if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
+
+			}
+			/**
+			 * Fired before a command is executed. Don't cant stop command of running
+			 * @event Client#aghanim:command:afterrun
+			 * @param {object} msg - Eris Message object
+			 * @param {args} args - Args object
+			 * @param {Client} client - Client instance
+			 * @param {Command} command - Command
+			 */
+			this.emit('aghanim:command:beforerun', msg, args, this, command)
 			await command.runHook('executed', msg, args, this, command)
-			// if (command.cooldown) {
-			// 	command.setCooldown(msg.author.id)
-			// }
-			// if (command.cooldown || command.await) {
-			// 	if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
-			// }
 		}catch(err) {
 			/**
 			 * Fired when a command got an error executing the run function
@@ -281,6 +282,12 @@ class Client extends Eris.Client {
 			 */
 			logger.commandrunerror(`${command.name} - ${err} - ${err.stack}`)
 			this.emit('aghanim:command:error', err, msg, args, this, command)
+			try{
+				await command.runHook('error', msg, args, this, command, err)
+			}catch(errhook){
+				logger.commandrunerror(`${command.name} - ${errhook} - ${errhook.stack}`)
+				this.emit('aghanim:command:error', errhook, msg, args, this, command)
+			}
 		}
 
 	}
@@ -310,11 +317,12 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Apply a middleware to args argument to extend it.
+	 * Extend default args object.
 	 * @param {args} args - Args object.
 	 * @param {msg} msg - Eris Message.
+	 * @param {Client} client - Client instance.
 	 */
-	commandArgsMiddleware(args, msg) {
+	extendCommandArgs(args, msg, client) {
 
 	}
 
@@ -324,19 +332,18 @@ class Client extends Eris.Client {
 	 * @returns {Command} - Command added
 	 */
 	addCommand(command) {
-		if (!(command instanceof Command) && typeof(command) === 'object') { // allow command as object
+		if (!(command instanceof Command) && typeof(command) === 'object') { // allow command as object and create it
 			command = new Command(command)
 		}
-		if (!(command instanceof Command)) throw new TypeError('Not a command')
-		if (!this.categories.find(c => c.name === command.category)) {
+		if (!(command instanceof Command)) throw new TypeError('Not a command') // throw error if not a Command instance or class extending of command
+		if (!this.categories.find(c => c.name === command.category)) { // Check category exists or assing default category
 			command.category = DEFAULT_CATEGORY
 			logger.warn(`Category not found for ${command.name}. Established as ${DEFAULT_CATEGORY}`)
 		}
-		command.client = this
+		command.client = this // inject client on command
 		const requirements = command.requirements
-		command.requirements = []
-		requirements.forEach(req => {
-			// if(typeof(req) !== 'object'){throw new TypeError(`Requirement: ${req}`)}
+		command.requirements = [] // reset command.requirements
+		requirements.forEach(req => { // map command requirements
 			if(typeof(req) === 'string'){
 				if(BuiltinCommandRequirements[req]){
 					const commandReq = BuiltinCommandRequirements[req]({command, client: this})
@@ -361,27 +368,29 @@ class Client extends Eris.Client {
 				throw new TypeError(`Requirement: ${req} on ${command.name}`)
 			}
 		})
+
+		// Check if command exists already and throw error or add to client
 		if (!command.childOf) {
-			const cmd = this.commands.find(c => c.names.some(cname => [command.name, ...command.aliases].includes(cname)))
-			if (cmd) {
+			const commandExists = this.commands.find(c => c.names.some(cname => [command.name, ...command.aliases].includes(cname)))
+			if (commandExists) {
 				logger.commandadderror(`Command exists: ${command.name}`)
 			} else {
 				this.commands.push(command)
 				logger.dev(`Command added: ${command.name}`) 
 				return command
 			}
-		} else {
-			const cmd = this.commands.find(c => c.names.includes(command.childOf))
-			if (!cmd) { 
+		} else { // Find parent command and add to client
+			const parent = this.commands.find(c => c.names.includes(command.childOf))
+			if (!parent) { 
 				throw new Error(`Parent command ${command.childOf} not found for ${command.name}`) 
 			} else {
-				if (command.category !== cmd.category) {
-					command.category = cmd.category
-					logger.warn(`${command.category} not same upcomand! Established as ${cmd.category}`)
+				if (command.category !== parent.category) { // Set category as parent category if is different
+					command.category = parent.category
+					logger.warn(`${command.category} not same upcomand! Established as ${parent.category}`)
 				}
-				command.parent = cmd
-				cmd.childs.push(command)
-				logger.dev(`Subcommand added: ${command.name} from ${cmd.name}`)
+				command.parent = parent
+				parent.childs.push(command)
+				logger.dev(`Subcommand added: ${command.name} from ${parent.name}`)
 				return command
 			}
 		}
@@ -639,18 +648,19 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * If returns true, allow default commands management.
+	 * If returns true, allow default commands management and messageCreate Components functions.
 	 * @param  {Eris.message} msg - Eris Message object
+	 * @param  {Client} client - Client instance
 	 * @return {boolean} - true = allow, false = omit
 	 */
-	triggerMessageCreate(msg) {
+	triggerMessageCreate(msg, client) {
 		return true
 	}
 	
 	/**
-	 * If returns true, allow default commands management.
+	 * Create args object and find command. Returns both.
 	 * @param  {Eris.message} msg - Eris Message object
-	 * @return {{args, comman}} - 
+	 * @return {{args, command: Command}} - 
 	 */
 	parseCommand(msg) {
 		const {prefix, content} = this.splitPrefixFromContent(msg)
@@ -668,6 +678,8 @@ class Client extends Eris.Client {
 		 * @prop {function} until - Splice message content from begin until argument number
 		 * @prop {function} after - Same content
 		 * @prop {Client} client - Client instance
+		 * @prop {string} command - Command name
+		 * @prop {(string|undefined)} subcommand - Subcommand name if exists
 		 * @prop {array} - Each word form message is in a slot
 		 */
 		args.prefix = prefix
@@ -678,7 +690,7 @@ class Client extends Eris.Client {
 		args.client = this
 		args.command = args[0]
 		args.subcommand = args[1]
-		this.commandArgsMiddleware(args, msg)
+		this.extendCommandArgs(args, msg, this)
 		return { args, command }
 	}
 

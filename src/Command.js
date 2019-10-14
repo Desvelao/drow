@@ -8,25 +8,6 @@ class Command {
    *     array, the first item of the array is used as the name and the rest of
    *     the items are set as aliases.
    * @param {object} options - Options of command
-   * @param {boolean} [options.guildOnly=false] - Command only can works in guilds
-   * @param {boolean} [options.dmOnly=false] - Command only can works in dm messages
-   * @param {string|array} [options.userOnly=false] - Command only can works in these users
-   * @param {boolean} [options.ownerOnly=false] - Command only can works in bot owner
-   * @param {string|array} [options.roles=false] - Command only can works in guilds
-   * and members with roles
-   * @param {Command~check} [options.check=null] - Command only can works if this
-   * funciton return true
-   * @param {array|object} [options.permissions=null] - Command only can works if member
-   * in fuild has permissions
-   * @param {object} [options.userCooldown={}] - User cooldown
-   * @param {number} [options.userCooldown.time] - Time in seconds
-   * @param {string | function} [options.userCooldown.message='Not yet! Ready in **<cd>**s'] - Message sent if command is in cooldown for that user
-   * @param {object} [options.guildCooldown={}] - Guild cooldown
-   * @param {number} [options.guildCooldown.time] - Time in seconds
-   * @param {string | function} [options.guildCooldown.message='Not yet! Ready in **<cd>**s'] - Message sent if command is in cooldown for that guild
-   * @param {object} [options.channelCooldown={}] - Guild cooldown
-   * @param {number} [options.channelCooldown.time] - Time in seconds
-   * @param {string | function} [options.channelCooldown.message='Not yet! Ready in **<cd>**s'] - Message sent if command is in cooldown for that guild
    * @param {string} [options.childOf=undefined] -
    * Name of command that this commad is subcommand. It needs exists.
    * @param {string} [options.category='Default'] - Category from this command
@@ -34,9 +15,15 @@ class Command {
    * @param {string} [options.args=''] - The command arguments
    * @param {boolean} [options.hide=false] - Hide command from default help command
    * @param {boolean} [options.enable=true] - Enable/Disable the command
-   * @param {boolean} [options.await=false] - Await to resolve the command for put cooldown
-	 *
-   * @param {Command~run} run - The function to be called when the command is executed.
+   * @param {string} [options.childOf=undefined] - Parent command name
+   * @param {Array} [options.requirements=[]] - Requirements are mapped in client.addCommand
+   * @param {object} run - The function to be called when the command is executed.
+   * @param {string | function | EmbedMessageObject } response - Response to command. Ignore run function.
+   * @param {string | function | EmbedMessageObject } responseDM - DM response to command. Ignore run function.
+   * @param {object} [options.hooks = {}] - Command hooks.
+   * @param {Array<function>} [options.hooks.pre=[]] - Hook pre run command.
+   * @param {Array<function>} [options.hooks.executed=[]] - Hook after run command.
+   * @param {Array<function>} [options.hooks.error=[]] - Hook fired when there an error with execution command.
    */
 	constructor(name, options = {}, run) {
 		if (Array.isArray(name)) {
@@ -62,15 +49,28 @@ class Command {
 		this.run = run || options.run || async function(){}
 		/** @prop {string} - Description of command */
 		this.help = options.help || ''
+		/** @prop {string | EmbedMessageObject | function } - Response of command. If it exists, ignore run function. If function (msg, args, client, commad) */
+		this.response = options.response || ''
+		/** @prop {string | EmbedMessageObject | function } - Response of command with a direct message. If it exists, ignore run function. If function (msg, args, client, commad) */
+		this.responseDM = options.responseDM || ''
 		/** @prop {Command | undefined} - Parent Command */
 		this.parent = undefined
 		/** @prop {Command[]} - Subcommands of Command. */
 		this.childs = []
 		/** @prop {array} - Command Requirements */
-		this.requirements = options.requirements || [] // TODO:secure is array or convert one to array
+		this.requirements = Array.isArray(options.requirements) ? options.requirements : [] // These requirements are mapped in client.addCommand
 		/** @prop {object} - Command Hooks */
-		this.hooks = options.hooks || { // TODO:secure is array or convert one to array and hooks structure
-			executed: []
+		this.hooks = {
+			pre: [], // Fired before run command
+			executed: [], // Fired after command is run
+			error: [] // Fired when there is an error running pre/executed hooks and response/run methods
+		}
+		if(options.hooks && typeof(options.hooks) === 'object'){
+			Object.keys(this.hooks).forEach(key => {
+				const hook = this.hooks[key]
+				if(typeof(hook) !== 'function') throw new TypeError(`${hook} is not a function on ${this.name}`)
+				this.addHook(key, hook)
+			})
 		}
 		/** @prop {string|undefined} - Name of uppercomand */
 		this.childOf = options.childOf
@@ -84,6 +84,8 @@ class Command {
 		this.enable = options.enable !== undefined ? options.enable : true // Enable or disable command
 		/** @prop {Client} - Client instance */
 		this.client = undefined
+		/** @prop {object | undefined} - Custom props */
+		this.custom = undefined
 	}
 
 	/**
@@ -129,9 +131,10 @@ class Command {
 		return [this.name, ...this.aliases]
 	}
 
-	/** Register a requirement */
+	/** Add a requirement
+	* @param {object} requirement - Requirement to add. Inject a method to remove it.
+	*/
 	addRequirement(requirement) {
-		console.log(`Adding command requirement ${requirement.type} for ${this.name}`)
 		requirement.remove = () => this.removeRequirement(requirement)
 		this.requirements.push(requirement)
 		if(requirement.init){
@@ -139,35 +142,63 @@ class Command {
 		}
 	}
 
-	/** Register a requirement */
+	/** Remove a requirement
+	* @param {object} requirement - Requirement to remove.
+	*/
 	removeRequirement(requirement) {
-		this.requirements = this.requirements.filter(requirement)
+		this.requirements = this.requirements.filter(req => req !== requirement)
 	}
 
+	/** Run a hooks by hookname
+	* @param {string} hookname - Hook name.
+	* @param {object} args - Arguments passed to hook
+	*/
 	runHook(hookname, ...args){
 		this.hooks[hookname].forEach(hook => hook(...args))
+	}
+
+	/** Add a hook
+	* @param {string} hookname - Hook name.
+	* @param {object} hook - Hook to add.Inject a method to remove it.
+	*/
+	addHook(hookname, hook){
+		if(!this.hooks[hookname]){throw new Error(`Add command hook error: ${hookname} not defined on ${this.name} command`)}
+		hook.remove = () => this.removeHook(hookname, hook)
+		this.hooks[hookname].push(hook)
+	}
+
+	/** Remove a hook
+	* @param {string} hookname - Hook name.
+	* @param {object} hook - Hook to remove.
+	*/
+	removeHook(hookname, hook){
+		if(!this.hooks[hookname]){throw new Error(`Add command hook error: ${hookname} not defined on ${this.name} command`)}
+		this.hooks[hookname] = this.hooks[hookname].filter(h => h !== hook)
 	}
 
 	async checkRequirements(msg, args, client, command){
 		if(!command.enable){ return false}
 		return this.requirements.reduce(async (result, requirement) => {
-			if(await !result){ return Promise.resolve(false) }
+			if(!(await result)){ return Promise.resolve(false) }
 			if(typeof(requirement) === 'object'){
-				const pass = (await requirement.condition(msg, args, client, command, requirement))
-				if(pass === false || (Array.isArray(pass) && pass[0] === false)){
-					const ctx = pass && pass[1]
-					if(["string", "object"].includes(typeof(requirement.response))){
-						await msg.channel.createMessage(requirement.response) // Response to message
-					}else if(typeof(requirement.response) === "function"){
-						const res = await requirement.response(msg, args, client, command, requirement, ctx) 
-						await msg.channel.createMessage(res) // Response to message
-					}else if(["string", "object"].includes(typeof(requirement.responseDM))){
-						await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
-					}else if(typeof(requirement.response) === "function"){
-						const res = await requirement.responseDM(msg, args, client, command, requirement, ctx) 
-						await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
-					}else if(typeof(requirement.run) === "function"){
-						await requirement.run(msg, args, client, command, requirement, ctx) // Custom
+				const pass = await requirement.condition(msg, args, client, command, requirement)
+				console.log('ReqType', requirement.type, pass)
+				if(pass === false || pass === null || (Array.isArray(pass) && pass[0] === false)){
+					if(pass !== null){ // ignore response/run if requirement returns null
+						const ctx = pass && pass[1]
+						if(["string", "object"].includes(typeof(requirement.response))){
+							await msg.channel.createMessage(requirement.response) // Response to message
+						}else if(typeof(requirement.response) === "function"){
+							const res = await requirement.response(msg, args, client, command, requirement, ctx) 
+							await msg.channel.createMessage(res) // Response to message
+						}else if(["string", "object"].includes(typeof(requirement.responseDM))){
+							await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
+						}else if(typeof(requirement.response) === "function"){
+							const res = await requirement.responseDM(msg, args, client, command, requirement, ctx) 
+							await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
+						}else if(typeof(requirement.run) === "function"){
+							await requirement.run(msg, args, client, command, requirement, ctx) // Custom
+						}
 					}
 					return Promise.resolve(false)
 				}

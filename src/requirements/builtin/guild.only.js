@@ -1,4 +1,6 @@
-module.exports = (response) => ({
-    condition: (msg, req, cmd) => msg.channel.type === 0,
-    response
+module.exports = ({response, responseDM, run}) => ({
+    condition: (msg, args, client, command, req) => msg.channel.type === 0,
+    response,
+    responseDM,
+    run
 })
