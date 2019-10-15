@@ -11,7 +11,6 @@ module.exports = ({cooldowns = {}, time, response = "Not yet! Ready in **%cd%**s
 	init: (client, command, req) => {
 		// Add hook to after command execute
 		command.addHook('executed', (msg, args, client, command) => {
-			console.log('execute hook.executed')
 			req.cooldowns[msg.author.id] = Math.round(new Date().getTime() / 1000) + req.time
 		})
 	} 

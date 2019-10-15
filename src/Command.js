@@ -17,13 +17,14 @@ class Command {
    * @param {boolean} [options.enable=true] - Enable/Disable the command
    * @param {string} [options.childOf=undefined] - Parent command name
    * @param {Array} [options.requirements=[]] - Requirements are mapped in client.addCommand
-   * @param {object} run - The function to be called when the command is executed.
-   * @param {string | function | EmbedMessageObject } response - Response to command. Ignore run function.
-   * @param {string | function | EmbedMessageObject } responseDM - DM response to command. Ignore run function.
    * @param {object} [options.hooks = {}] - Command hooks.
    * @param {Array<function>} [options.hooks.pre=[]] - Hook pre run command.
    * @param {Array<function>} [options.hooks.executed=[]] - Hook after run command.
    * @param {Array<function>} [options.hooks.error=[]] - Hook fired when there an error with execution command.
+   * @param {object} [options.custom={}] - Define custom methods or properties to copy to command.
+   * @param {object} run - The function to be called when the command is executed.
+   * @param {string | function | EmbedMessageObject } response - Response to command. Ignore run function.
+   * @param {string | function | EmbedMessageObject } responseDM - DM response to command. Ignore run function.
    */
 	constructor(name, options = {}, run) {
 		if (Array.isArray(name)) {
@@ -182,7 +183,6 @@ class Command {
 			if(!(await result)){ return Promise.resolve(false) }
 			if(typeof(requirement) === 'object'){
 				const pass = await requirement.condition(msg, args, client, command, requirement)
-				console.log('ReqType', requirement.type, pass)
 				if(pass === false || pass === null || (Array.isArray(pass) && pass[0] === false)){
 					if(pass !== null){ // ignore response/run if requirement returns null
 						const ctx = pass && pass[1]

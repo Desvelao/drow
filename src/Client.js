@@ -40,6 +40,7 @@ class Client extends Eris.Client {
 	* @param {boolean} [options.allowMention = false] - Whether or not the bot can respond
 	*     to messages starting with a mention of the bot.
 	* @param {boolean} [options.ignoreBots = true] - Whether or not the bot ignoresBots. Default: true
+	* @param {boolean} [options.ignoreSelf = true] - Whether or not the bot ignores self. Default: true
 	* @param {string} [options.helpMessage = '**Help**'] - Title for default command help Message
 	* @param {string} [options.helpMessageAfterCategories = '**Note**: Use \`${options.prefix}help <category>\` to see the commands']
 	* Message after categories in default command help message are shown
@@ -77,8 +78,10 @@ class Client extends Eris.Client {
 		 * starting with a mention of the bot. Defaults to true. */
 		this.allowMention = options.allowMention === null ? false : options.allowMention
 		/** @prop {boolean} - Whether or not the bot ignores messages
-		*sent from bot accounts. Defaults to true. */
-		this.ignoreBots = options.ignoreBots == null ? true : options.ignoreBots
+		 *sent from bot accounts. Defaults to true. */
+		this.ignoreBots = options.ignoreBots !== undefined ? options.ignoreBots : true
+		/** @prop {boolean} - Ignore self */
+		this.ignoreSelf = options.ignoreSelf !== undefined ? options.ignoreSelf : true
 
 		this.once('ready', () => {
 			if (this._ready) { return }
@@ -194,7 +197,7 @@ class Client extends Eris.Client {
 	 */
 	async handleMessage(msg) {
 		if (!this._ready) return
-		if (!this.triggerMessageCreate(msg, client)) { return }
+		if (!this.triggerMessageCreate(msg, this)) { return }
 		this.handleEvent('messageCreate')(msg)
 
 		if (this.ignoreBots && msg.author.bot) return
@@ -261,14 +264,14 @@ class Client extends Eris.Client {
 
 			}
 			/**
-			 * Fired before a command is executed. Don't cant stop command of running
+			 * Fired after a command is executed. Don't cant stop command of running
 			 * @event Client#aghanim:command:afterrun
 			 * @param {object} msg - Eris Message object
 			 * @param {args} args - Args object
 			 * @param {Client} client - Client instance
 			 * @param {Command} command - Command
 			 */
-			this.emit('aghanim:command:beforerun', msg, args, this, command)
+			this.emit('aghanim:command:afterrun', msg, args, this, command)
 			await command.runHook('executed', msg, args, this, command)
 		}catch(err) {
 			/**
@@ -343,31 +346,37 @@ class Client extends Eris.Client {
 		command.client = this // inject client on command
 		const requirements = command.requirements
 		command.requirements = [] // reset command.requirements
-		requirements.forEach(req => { // map command requirements
-			if(typeof(req) === 'string'){
-				if(BuiltinCommandRequirements[req]){
-					const commandReq = BuiltinCommandRequirements[req]({command, client: this})
-					commandReq.type = req
-					command.addRequirement(commandReq)
-				}else if(this._commandsRequirements[req]){
-					if(typeof(this._commandsRequirements[req]) === "object"){
-						command.addRequirement(this._commandsRequirements[req])
-					}else if(typeof(this._commandsRequirements[req]) === "function"){
-						command.addRequirement(this._commandsRequirements[req](command, this))
-					}
-				}
-			}else if(typeof(req) === 'object'){
-				if(BuiltinCommandRequirements[req.type]){
-					const commandReq = BuiltinCommandRequirements[req.type]({...req, command, client: this})
-					commandReq.type = req.type
-					command.addRequirement(commandReq)
-				}else{
-					command.addRequirement(req)
-				}
-			}else{
-				throw new TypeError(`Requirement: ${req} on ${command.name}`)
-			}
-		})
+		// requirements.forEach(req => { // map command requirements
+		// 	if(typeof(req) === 'string'){
+		// 		if(BuiltinCommandRequirements[req]){
+		// 			const commandReq = BuiltinCommandRequirements[req]({command, client: this})
+		// 			commandReq.type = req
+		// 			command.addRequirement(commandReq)
+		// 		}else if(this._commandsRequirements[req]){
+		// 			if(typeof(this._commandsRequirements[req]) === "object"){
+		// 				command.addRequirement(this._commandsRequirements[req])
+		// 			}else if(typeof(this._commandsRequirements[req]) === "function"){
+		// 				const result = this._commandsRequirements[req](command, this)
+		// 				if(Array.isArray(result)){
+		// 					// result.forEach()
+		// 				}else{
+		// 					command.addRequirement(result)
+		// 				}
+		// 			}
+		// 		}
+		// 	}else if(typeof(req) === 'object'){
+		// 		if(BuiltinCommandRequirements[req.type]){
+		// 			const commandReq = BuiltinCommandRequirements[req.type]({...req, command, client: this})
+		// 			commandReq.type = req.type
+		// 			command.addRequirement(commandReq)
+		// 		}else{
+		// 			command.addRequirement(req)
+		// 		}
+		// 	}else{
+		// 		throw new TypeError(`Requirement: ${req} on ${command.name}`)
+		// 	}
+		// })
+		mapCommandRequirement(this, command, requirements)
 
 		// Check if command exists already and throw error or add to client
 		if (!command.childOf) {
@@ -417,7 +426,7 @@ class Client extends Eris.Client {
 			command.filename = filename
 			this.addCommand(command)
 		} catch (err) {
-			logger.commandadderror(`${err} on ${filename}`)
+			logger.commandadderror(`${err.stack} on ${filename}`)
 		}
 	}
 
@@ -442,7 +451,7 @@ class Client extends Eris.Client {
 	/**
 	 * Add a Component
 	 * @param {Component | object} component - Component {@link Component}
-	 * @returns {Component | undefined} - Component added
+	 * @returns {Component} - Component added
 	 */
 	addComponent(component, options) {
 		if (!(component instanceof Component) && typeof(component) === 'object') { // allow load components as object
@@ -613,38 +622,17 @@ class Client extends Eris.Client {
 	}
 
 	/**
-	 * Define a requirement
+	 * Define a requirement that can be added by commands
 	 * @param  {(object|function)} requirement - Requirement to define
 	 */
 	defineCommandRequirement(requirement){
 		if(typeof(requirement) === 'object' && requirement.type){
-			console.log(`Defined req ${requirement.type}`,requirement)
 			this._commandsRequirements[requirement.type] = requirement
 		}else if(typeof(requirement) === 'function'){
-			this._commandsRequirements[requirement.type] = requirement
+			this._commandsRequirements[requirement.name] = requirement
 		}else{
 			logger.error('Error adding command requirement')
 		}
-	}
-
-	checkMemberHasRole(guildID, memberID, roles) { /* eslint class-methods-use-this: "off" */
-		const guild = this.guilds.get(guildID)
-		if(!guild) return
-		const member = guild.members.get(memberID)
-		if (!member) return
-		if (typeof (roles) === 'string') { roles = [roles] }
-		roles = roles.map(r => r.toLowerCase())
-		return member.roles.find( r => roles.includes(msg.channel.guild.roles.get(r).name.toLowerCase()) )
-	}
-
-	checkMemberHasPermissions(guildID, memberID, permissions) {
-		const guild = this.guilds.get(guildID)
-		if(!guild) return
-		const member = guild.members.get(memberID)
-		if (!member) return
-		return !Object.keys(permissions)
-			.map(p => ({name : p, enable : permissions[p]}))
-			.some(p => member.permission.json[p.name] !== p.enable)
 	}
 
 	/**
@@ -658,9 +646,22 @@ class Client extends Eris.Client {
 	}
 	
 	/**
+	 * 
+	 * @typedef EmbedMessageObject
+	 * @see {@link https://abal.moe/Eris/docs/TextChannel#function-createMessage EmbedMessageObject}
+	 */
+
+	/**
+	 * Creators for Command Requirements
+	 * @typedef {function} CommandRequirementsCreators
+	 * @param {object} config - Object with requirement config
+	 * @see {@link https://desvelao.github.io/aghanim/tutorial-6command-requirements.html Command Requirements Creators} config - Object with requirement config
+	 */
+
+	/**
 	 * Create args object and find command. Returns both.
 	 * @param  {Eris.message} msg - Eris Message object
-	 * @return {{args, command: Command}} - 
+	 * @return {{args, command}} - 
 	 */
 	parseCommand(msg) {
 		const {prefix, content} = this.splitPrefixFromContent(msg)
@@ -674,9 +675,9 @@ class Client extends Eris.Client {
 		 * @typedef args
 		 * @prop {string} prefix - Message prefix
 		 * @prop {string} content - Message content
-		 * @prop {function} from - Splice message content from argument number to end message
-		 * @prop {function} until - Splice message content from begin until argument number
-		 * @prop {function} after - Same content
+		 * @prop {function} from - Splice message content from argument number to end message. fn(arg:number)
+		 * @prop {function} until - Splice message content from begin until argument number. fn(arg:number)
+		 * @prop {function} after - Same content. fn()
 		 * @prop {Client} client - Client instance
 		 * @prop {string} command - Command name
 		 * @prop {(string|undefined)} subcommand - Subcommand name if exists
@@ -728,6 +729,44 @@ class Client extends Eris.Client {
 	//     sendChunk(left.join(''), maxLength)
 	//   }(content))
 	// }
+}
+
+
+function getCommandRequirement(client, command, req){
+	if(typeof(req) === 'string'){
+		if(BuiltinCommandRequirements[req]){
+			const requirement = BuiltinCommandRequirements[req]({command, client})
+			requirement.type = req
+			return requirement
+		}else if(client._commandsRequirements[req]){
+			if(typeof(client._commandsRequirements[req]) === "object"){
+				return client._commandsRequirements[req]
+			}else if(typeof(client._commandsRequirements[req]) === "function"){
+				return client._commandsRequirements[req]({command, client})
+			}
+		}
+	}else if(typeof(req) === 'object'){
+		if(BuiltinCommandRequirements[req.type]){
+			const requirement = BuiltinCommandRequirements[req.type]({...req, command, client})
+			requirement.type = req.type
+			return requirement
+		}else{
+			return req
+		}
+	}else{
+		throw new TypeError(`Requirement: ${req} on ${command.name}`)
+	}
+}
+
+function mapCommandRequirement(client, command, reqs){
+	reqs.forEach(req => {
+		const requirement = getCommandRequirement(client, command, req)
+		if(Array.isArray(requirement)){
+			mapCommandRequirement(client, command, requirement)
+		}else{
+			command.addRequirement(requirement)
+		}
+	})
 }
 
 module.exports = Client

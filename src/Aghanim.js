@@ -25,6 +25,6 @@ module.exports.Component = Component;
 module.exports.Eris = Eris;
 /** @prop {Logger} Component See {@link https://github.com/Geo1088/another-logger another-logger} */
 module.exports.Logger = Logger;
-/** @prop {CommandRequirementsCreators} CommandRequirementsCreators See {@link https://desvelao.github.com/aghanim CommandRequirements} */
+/** @prop {CommandRequirementsCreators} CommandRequirementsCreators See {@link https://desvelao.github.com/aghanim/CommandRequirements CommandRequirements} */
 module.exports.CommandRequirementsCreators = CommandRequirementsCreators;
 

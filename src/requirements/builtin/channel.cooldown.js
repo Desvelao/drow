@@ -1,4 +1,4 @@
-module.exports = ({cooldowns = {}, time, response = "Not yet! Command on cooldown for this channel. Ready in **%cd%** seconds", responseDM, run}) => ({
+module.exports = ({time, response = "Not yet! Command on cooldown for this channel. Ready in **%cd%** seconds", responseDM, run}) => ({
     condition: (msg, args, client, command, req) => {
 		if(msg.channel.type === 1){ return null }
 		const cooldown = (req.cooldowns[msg.channel.id] || 0) - Math.round(new Date().getTime() / 1000)

@@ -18,8 +18,9 @@ $ npm install --save Desvelao/aghanim#dev # npm
 ### Steps
 1. [Create](./tutorial-2create-bot.html) a bot instance
 2. Define your [Categories](tutorial-5categories.html)
-4. Add [Commands/Subcommands](tutorial-3command.html)
-5. Add [Components](tutorial-4components.html)
+3. Add [Commands/Subcommands](tutorial-3command.html)
+4. Add [Components](tutorial-4components.html)
+5. Add [Command Requirements](tutorial-6comamnd-requirements.html)
 
 ### Fast Example
 

@@ -6,3 +6,5 @@ module.exports = filenames.reduce((sum, filename) => {
     sum[path.basename(filename, '.js')] = require(filename)
     return sum
 },{})
+
+
