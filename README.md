@@ -5,14 +5,16 @@
 __Author__ : [Desvelao^^](https://desvelao.github.io/profile/)  __Version__: `v0.1.0`
 
 ## Features
+- Add Commands/Subcommands and Components from files or directories
 - Support for Subcommands (Command should be exist)
-- Commands with user cooldown
-- Add Components that can fire at some Eris events or add custom functionality to your bot
-- Commands and Components portability
+- Builtin commands requirements or define yours
+- Define Commands as objects or use Command class
+- Define Components as object or a class that extends of Component class
+- Define methods to run in some Eris events automatically with your Components
 
 ## Using the bot
 
-Usage information for the bot (the usable commands, default configuration, and other help topics) can be found in the wiki [here](https://desvelao.github.io/aghanim/).
+Usage information for the bot (the usable commands, default configuration, and other help topics) can be found [here](https://desvelao.github.io/aghanim/).
 
 ## Using the package
 
@@ -48,7 +50,7 @@ client.addCategory('Fun','Fun commands')
 
 const pingCommand = new Command('ping', {
   category : 'Fun', help : 'Get Pong!', args : ''},
-  function (msg, args, client, command) {
+  async function(msg, args, client, command) {
   	msg.channel.createMessage('Pong!')
 })
 

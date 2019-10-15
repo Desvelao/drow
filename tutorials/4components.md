@@ -20,6 +20,9 @@ class MyComponent extends Component{
 		console.log(`Message: ${msg.content}`)
 		// this.client is Aghanim Client instance. You can use it here
 	}
+	messageReactionAdd(msg, emoji, userID, client){
+		// do something when a reactions is added to one message
+	}
 }
 
 module.exports = MyComponent
@@ -32,11 +35,12 @@ module.exports = MyComponent
 	const MyComponent = require('./my_component.js')
 	client.addComponent(MyComponent)
 
+	const path = require('path')
 	//You can import the file directly using addComponentFile method
-	client.addComponentFile(__dirname + '/my_component.js')
+	client.addComponentFile(path.join(__dirname, '/my_component.js'))
 
 	//Or you can import a directory of components with addComponentDir method
-	client.addComponentDir(__dirname + '/path/to/components_folder')
+	client.addComponentDir(path.join(__dirname + '/path/to/components_folder'))
 ```
 
 ### Component Object
@@ -47,7 +51,7 @@ Create a component as object
 module.exports = {
 	name: 'ping',
 	constructor: (client, options) => {
-
+		// do something when create component instance
 	}
 	ready: () => {
 		console.log('My component is ready')
@@ -55,6 +59,9 @@ module.exports = {
 	help: 'Get Pong!',
 	messageCreate(msg, args, client, command){
 		console.log(`Message: ${msg.content}`)
+	}
+	messageReactionAdd(msg, emoji, userID, client){
+		// do something when a reactions is added to one message
 	}
 }
 ```
@@ -73,14 +80,14 @@ These events will be fired of components:
 For more info about client events go to [Eris](https://abal.moe/Eris/docs/Client#event-callCreate)
 
 The arguments of these events are same Eris and added client as last. That means that if for example:
-  - Eris event: messageCreate(message)
-  - Aghanim event: messageCreate(message, client)
+  - Eris event: messageReactionAdd(message, emoji, userID)
+  - Aghanim event: messageReactionAdd(message, emoji, userID, client)
 
-If you need listen more events of that Aghanim do fby default you can do it
+If you need listen more events of that Aghanim do by default you can do it
 
 ```js
 client.on(eventName, handler)
 
 // or if you want add Aghanim functionality through components
-client.on(eventName, client.handleEvent(eventName)) // that add client as last argument to event handler
+client.on(eventName, client.handleEvent(eventName)) // that add client as last argument to event handler of Eris event handler
 ```

@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "eslint": "./node_modules/.bin/eslint index.js",
     "docs": "jsdoc src -d docs --readme ./readme.md -c ./conf.json -u ./tutorials",
+    "docs2": "jsdoc src -d docs --readme ./readme.md -c ./conf.json -u ./tutorials -t node_modules/jsdoc-template",
     "predeploy": "npm run docs",
     "deploy": "gh-pages -d docs"
   },
@@ -29,6 +30,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.3",
     "gh-pages": "^2.0.1",
-    "jsdoc": "^3.6.3"
+    "jsdoc": "^3.6.3",
+    "jsdoc-template": "github:braintree/jsdoc-template"
   }
 }

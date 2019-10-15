@@ -125,7 +125,7 @@ module.exports = {
 }
 ```
 
-Command requirements creators:
+#### Command requirements creators:
 
 - Channels/Guilds/Users allow/deny:
 	- `channel.allow`: allow command on channels whose ids are on channels property
@@ -139,7 +139,7 @@ Command requirements creators:
 		// command definition...
 			requirements : [
 				{
-					type: 'channel.allow', // map to the builtin requirement creator. Same interface for channels.deny
+					type: 'channel.allow', // map to the builtin requirement creator. Same interface for requirements from below
 					store: [], // array of strings channles ids
 					response, // optional
 					responseDM, // optional
@@ -157,7 +157,7 @@ Command requirements creators:
 		// command definition...
 			requirements : [
 				{
-					type: 'channel.cooldown', // map to the builtin requirement creator
+					type: 'channel.cooldown', // map to the builtin requirement creator. Same interface for requirements from below
 					time: 60, // cooldown time in seconds. Set after a suscefully command execution
 					response, // optional
 					responseDM, // optional
@@ -201,7 +201,6 @@ Command requirements creators:
 			]
 		}
 		```
-
 
 - Miscelaneous
 	- `dm.only`: allow command on direct message only

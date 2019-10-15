@@ -26,7 +26,7 @@ $ npm install --save Desvelao/aghanim#dev # npm
 
 ```js
 //index.js
-const Aghanim = require('aghanim')
+const Aghanim  = require('aghanim')
 const { Command, Component }  = require('aghanim')
 
 const client = new Aghanim(
@@ -40,8 +40,7 @@ client.addCategory('Fun','Fun commands')
 
 const pingCommand = new Command('ping', {
   category : 'Fun', help : 'Get Pong!', args : ''},
-  function (msg,args,cmd) {
-		//this = Aghanim.Client
+  async function(msg, args, client, command) {
   	msg.channel.createMessage('Pong!')
 })
 
@@ -52,10 +51,10 @@ class MyComponent extends Component{
 	constructor(client, options) {
 		super(client) // this.client is Aghanim Client instance. You can use in other methods
 	}
-	ready(){
+	ready(client){ // method fired in client.on('ready', handler) by default of this component. Each component can add handlers for events.
 		console.log('My component is ready')
 	}
-	messageCreate(msg, args, command){
+	messageCreate(msg, args, client, command){ // method fired in client.on('messageCreat', handler).
 		console.log(`Message: ${msg.content}`)
 		// this.client is Aghanim Client instance. You can use it here
 	}

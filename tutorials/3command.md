@@ -11,12 +11,12 @@ module.exports = new Command('ping', // command name
 		args : '',
 		requirements: [], // Define requirements for this command. See command requirements tutorial
 		hooks : { // Add hooks to commnand
-			pre : [], // Array of hooks fired before command execution
-			executed : [], // Array of hooks fired after command execution
-			error: [] // Array of hooks fired if the command has some error
+			pre : [], // Array of hooks fired before command execution. function(msg, args, client, command)
+			executed : [], // Array of hooks fired after command execution. function(msg, args, client, command)
+			error: [] // Array of hooks fired if the command has some error. function(msg, args, client, command, error)
 		}
-		response: "Pong!", // String or function(msg, args, client, commnad)
-		responseDM: "Pong by DM!", // String or function(msg, args, client, commnad)
+		response: "Pong!", // String or function(msg, args, client, commnad) that returns a string or EmbedMessageObject
+		responseDM: "Pong by DM!", // String or function(msg, args, client, commnad) that returns a string or EmbedMessageObject
 	},
 	async function (msg, args, client, command) { // run function. Only execute if not options.response or options.responseDM
 		msg.channel.createMessage('Pong by run function!')
@@ -31,11 +31,12 @@ Command execute first of: `response` > `responseDM` > `run`
 	const ping_command = require('./ping.js')
 	client.addCommmand(ping_command)
 
+	const path = require('path')
 	//You can import the file directly using addCommandFile method
-	client.addCommandFile(__dirname + '/ping.js')
+	client.addCommandFile(path.join(__dirname, '/ping.js'))
 
 	//Or you can import a directory of commands with addCommandDir method
-	client.addCommandDir(__dirname + 'path/to/commands')
+	client.addCommandDir(path.join(__dirname + 'path/to/commands'))
 ```
 
 ### Create a Subcommand
@@ -55,7 +56,7 @@ module.exports = new Command('pong',
 	}
 )
 
-// This command will be fired with `[botPrefix]ping pong`
+// This command will be fired with `[client.prefix]ping pong`
 ```
 
 ### Command Object
@@ -67,14 +68,14 @@ module.exports = {
 	category: 'Fun',
 	help: 'Get Pong!',
 	args: '',
-	requirements: [], // Define requirements for this command. See command requirements tutorial
-	hooks : { // Add hooks to commnand
-		pre : [], // Array of hooks fired before command execution
-		executed : [], // Array of hooks fired after command execution
-		error: [] // Array of hooks fired if the command has some error
+	requirements: [],
+	hooks : {
+		pre : [],
+		executed : [],
+		error: []
 	}
-	response: "Pong!", // String or function(msg, args, client, commnad)
-	responseDM: "Pong by DM!", // String or function(msg, args, client, commnad)
+	response: "Pong!",
+	responseDM: "Pong by DM!",
 	run: async (msg, args, client, command){
 		return msg.channel.createMesage('Pong by run function')
 	}

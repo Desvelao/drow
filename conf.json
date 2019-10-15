@@ -1,7 +1,8 @@
 {
   "templates" : {
+    "referenceTitle": "Aghanim Command Client",
     "default" : {
         "includeDate" : false
-      }
     }
+  }
 }

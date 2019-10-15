@@ -8,8 +8,6 @@ class Command {
    *     array, the first item of the array is used as the name and the rest of
    *     the items are set as aliases.
    * @param {object} options - Options of command
-   * @param {string} [options.childOf=undefined] -
-   * Name of command that this commad is subcommand. It needs exists.
    * @param {string} [options.category='Default'] - Category from this command
    * @param {string} [options.help=''] - Description of command
    * @param {string} [options.args=''] - The command arguments
@@ -22,7 +20,7 @@ class Command {
    * @param {Array<function>} [options.hooks.executed=[]] - Hook after run command.
    * @param {Array<function>} [options.hooks.error=[]] - Hook fired when there an error with execution command.
    * @param {object} [options.custom={}] - Define custom methods or properties to copy to command.
-   * @param {object} run - The function to be called when the command is executed.
+   * @param {Command~run} run - The function to be called when the command is executed.
    * @param {string | function | EmbedMessageObject } response - Response to command. Ignore run function.
    * @param {string | function | EmbedMessageObject } responseDM - DM response to command. Ignore run function.
    */
@@ -107,23 +105,6 @@ class Command {
     */
 
 	/**
-	* @callback Command~check
-	* A function to be called before execute a coomand.
-	* It's a custom requirement to execute the command. It should return true or false
-	* @param {Eris.Message} msg - The Eris message object that triggered the command.
-	*     For more information, see the Eris documentation:
-	*     {@link https://abal.moe/Eris/docs/Message}
-	* @param {args} args - An array of arguments passed to the command,
-	*     obtained by removing the command name and prefix from the message, then
-	*     splitting on spaces. To get the raw text that was passed to the
-	*     command, use `args.join(' ')`.
-	* @param {Client} client client instance that recieved the message triggering the
-    *     command.
-	* @param {Command} command - The name or alias used to call the command in
-	*     the message. Will be one of the values of `this.names`.
-	*/
-
-	/**
 	* All names that can be used to invoke the command - its primary name in
 	* addition to its aliases.
 	* @return {Array<string>}
@@ -150,17 +131,18 @@ class Command {
 		this.requirements = this.requirements.filter(req => req !== requirement)
 	}
 
-	/** Run a hooks by hookname
-	* @param {string} hookname - Hook name.
-	* @param {object} args - Arguments passed to hook
-	*/
-	runHook(hookname, ...args){
-		this.hooks[hookname].forEach(hook => hook(...args))
-	}
+	/**
+	 * Command hook
+	 * @callback CommandHook 
+	 * @param {Eris.Message} msg - Eris message 
+	 * @param {args} args - Arguments
+	 * @param {Client} client - Eris message 
+	 * @param {Command} command - Command
+	 */
 
 	/** Add a hook
 	* @param {string} hookname - Hook name.
-	* @param {object} hook - Hook to add.Inject a method to remove it.
+	* @param {CommandHook} hook - Hook to add.Inject a method to remove it.
 	*/
 	addHook(hookname, hook){
 		if(!this.hooks[hookname]){throw new Error(`Add command hook error: ${hookname} not defined on ${this.name} command`)}
@@ -170,41 +152,15 @@ class Command {
 
 	/** Remove a hook
 	* @param {string} hookname - Hook name.
-	* @param {object} hook - Hook to remove.
+	* @param {CommandHook} hook - Hook to remove.
 	*/
 	removeHook(hookname, hook){
 		if(!this.hooks[hookname]){throw new Error(`Add command hook error: ${hookname} not defined on ${this.name} command`)}
 		this.hooks[hookname] = this.hooks[hookname].filter(h => h !== hook)
 	}
 
-	async checkRequirements(msg, args, client, command){
-		if(!command.enable){ return false}
-		return this.requirements.reduce(async (result, requirement) => {
-			if(!(await result)){ return Promise.resolve(false) }
-			if(typeof(requirement) === 'object'){
-				const pass = await requirement.condition(msg, args, client, command, requirement)
-				if(pass === false || pass === null || (Array.isArray(pass) && pass[0] === false)){
-					if(pass !== null){ // ignore response/run if requirement returns null
-						const ctx = pass && pass[1]
-						if(["string", "object"].includes(typeof(requirement.response))){
-							await msg.channel.createMessage(requirement.response) // Response to message
-						}else if(typeof(requirement.response) === "function"){
-							const res = await requirement.response(msg, args, client, command, requirement, ctx) 
-							await msg.channel.createMessage(res) // Response to message
-						}else if(["string", "object"].includes(typeof(requirement.responseDM))){
-							await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
-						}else if(typeof(requirement.response) === "function"){
-							const res = await requirement.responseDM(msg, args, client, command, requirement, ctx) 
-							await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
-						}else if(typeof(requirement.run) === "function"){
-							await requirement.run(msg, args, client, command, requirement, ctx) // Custom
-						}
-					}
-					return Promise.resolve(false)
-				}
-			}
-			return Promise.resolve(result)
-		}, Promise.resolve(true))
+	runHook(hookname, ...args){
+		this.hooks[hookname].forEach(hook => hook(...args))
 	}
 
 	/** Throw a command error */
@@ -213,5 +169,22 @@ class Command {
 	}
 }
 
+/**
+ * @typedef CommandRequirementObject
+ * @prop {string} type - Type requirement
+ * @prop {function} condition - If returns false, do first of response/resposneDM/run
+ * @prop {string|function|undefined} response - Reply with this response
+ * @prop {string|function|undefined} responseDM - Reply with this response by direct message
+ * @prop {function|undefined} run - Run this custom function
+ * @prop {function|undefined} init - Run when requirement is added to command
+ */
+
+ /**
+ * @callback CommandRequirementFunction
+ * @param {object} config - Config requirement
+ * @param {Command} config.command - Command
+ * @param {Client} config.command - Client
+ * @returns {CommandRequirementObject|Array<CommandRequirementObject>}
+ */
 
 module.exports = Command
