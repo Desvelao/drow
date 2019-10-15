@@ -1,5 +1,5 @@
 module.exports = ({response, responseDM, run}) => ({
-    condition: (msg, req, cmd) => msg.author.id === cmd.client.owner.id,
+    condition: (msg, args, client, command, req) => msg.author.id === cmd.client.owner.id,
     response,
     responseDM,
     run
