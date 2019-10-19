@@ -6,7 +6,7 @@ const Command = require('./Command')
 const Category = require('./Category')
 const Component = require('./Component')
 const reload = require('require-reload')(require)
-const BuiltinCommandRequirements = require('./requirements')
+const builtinCommandRequirements = require('./requirements')
 
 const DEFAULT_CATEGORY = 'Default'
 
@@ -71,7 +71,9 @@ class Client extends Eris.Client {
 		this.components = {}
 		/** @prop {Object} - Setup */
 		this.setup = {}
-
+		// /** @prop {Object} - Context Extension */
+		// this.contextExtension = {}
+		
 		this._ready = false
 		this._commandsRequirements = {}
 
@@ -206,7 +208,15 @@ class Client extends Eris.Client {
 		if (this.ignoreBots && msg.author.bot) return
 		if (this.ignoreSelf && msg.author.id === this.user.id) return
 
-		const { command, args } = this.parseCommand(msg)
+		const args = this.createCommandArgs(msg)
+		if (!args) { return }
+		const command = this.getCommandByName(args[0], args[1])
+		if (!command) { return }
+		// const context = Object.assign({
+		// 	command,
+		// 	client: this
+		// }, this.contextExtension)
+
 		
 		try {
 			if (!command || !args ) return
@@ -262,7 +272,7 @@ class Client extends Eris.Client {
 					}
 				}
 			}else{
-				const val = await command.run(msg, args, this, command)
+				const value = await command.run(msg, args, this, command)
 				// 	if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
 
 			}
@@ -687,13 +697,12 @@ class Client extends Eris.Client {
 	 * @param  {Eris.message} msg - Eris Message object
 	 * @returns {parseCommand} - 
 	 */
-	parseCommand(msg) {
+	createCommandArgs(msg) {
 		const {prefix, content} = this.splitPrefixFromContent(msg)
 		if( typeof prefix !== 'string' || typeof content !== 'string') return
 
 		const args = content.split(' ').map(word => word.trim())
-		const command = this.getCommandByName(args[0], args[1])
-		if(!command){return {args, command: undefined}}
+		
 		/**
 		 * Message is spit for spaces (' ')
 		 * @typedef args
@@ -709,14 +718,14 @@ class Client extends Eris.Client {
 		 */
 		args.prefix = prefix
 		args.content = content
-		args.from = arg => msg.content.replace(`${args.prefix}${args.slice(0, arg).join(' ')} `, '')
+		args.from = arg => args.slice(arg).join(' ')
 		args.until = arg => args.prefix + args.slice(0, arg).join(' ')
 		args.after = args.from(1)
 		args.client = this
 		args.command = args[0]
 		args.subcommand = args[1]
 		this.extendCommandArgs(args, msg, this)
-		return { args, command }
+		return args
 	}
 
 	async checkRequirements(msg, args, client, command){
@@ -725,27 +734,26 @@ class Client extends Eris.Client {
 			if(!(await result)){ return Promise.resolve(false) }
 			if(typeof(requirement) === 'object'){
 				const pass = await requirement.condition(msg, args, client, command, requirement)
-				if(pass === false || pass === null || (Array.isArray(pass) && pass[0] === false)){
-					if(pass !== null){ // ignore response/run if requirement returns null
-						const ctx = pass && pass[1]
-						if(["string", "object"].includes(typeof(requirement.response))){
-							await msg.channel.createMessage(requirement.response) // Response to message
-						}else if(typeof(requirement.response) === "function"){
-							const res = await requirement.response(msg, args, client, command, requirement, ctx) 
-							await msg.channel.createMessage(res) // Response to message
-						}else if(["string", "object"].includes(typeof(requirement.responseDM))){
-							await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
-						}else if(typeof(requirement.response) === "function"){
-							const res = await requirement.responseDM(msg, args, client, command, requirement, ctx) 
-							await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
-						}else if(typeof(requirement.run) === "function"){
-							await requirement.run(msg, args, client, command, requirement, ctx) // Custom
-						}
+				if(pass === null){ // ignore response/responseDM/run methods
+					return Promise.resolve(false)
+				}else if(!pass){ // false/undefined do response/responseDM/run methods
+					if(["string", "object"].includes(typeof(requirement.response))){
+						await msg.channel.createMessage(requirement.response) // Response to message
+					}else if(typeof(requirement.response) === "function"){
+						const res = await requirement.response(msg, args, client, command, requirement) 
+						await msg.channel.createMessage(res) // Response to message
+					}else if(["string", "object"].includes(typeof(requirement.responseDM))){
+						await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
+					}else if(typeof(requirement.responseDM) === "function"){
+						const res = await requirement.responseDM(msg, args, client, command, requirement) 
+						await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
+					}else if(typeof(requirement.run) === "function"){
+						await requirement.run(msg, args, client, command, requirement) // Custom
 					}
 					return Promise.resolve(false)
 				}
 			}
-			return Promise.resolve(result)
+			return Promise.resolve(true) // result
 		}, Promise.resolve(true))
 	}
 	// /**
@@ -787,8 +795,8 @@ class Client extends Eris.Client {
 
 function getCommandRequirement(client, command, req){
 	if(typeof(req) === 'string'){
-		if(BuiltinCommandRequirements[req]){
-			const requirement = BuiltinCommandRequirements[req]({command, client})
+		if(builtinCommandRequirements[req]){
+			const requirement = builtinCommandRequirements[req]({command, client})
 			requirement.type = req
 			return requirement
 		}else if(client._commandsRequirements[req]){
@@ -797,10 +805,12 @@ function getCommandRequirement(client, command, req){
 			}else if(typeof(client._commandsRequirements[req]) === "function"){
 				return client._commandsRequirements[req]({command, client})
 			}
+		}else{
+			throw new Error(`String command requirement not found: ${req}`)
 		}
 	}else if(typeof(req) === 'object'){
-		if(BuiltinCommandRequirements[req.type]){
-			const requirement = BuiltinCommandRequirements[req.type]({...req, command, client})
+		if(builtinCommandRequirements[req.type]){
+			const requirement = builtinCommandRequirements[req.type]({...req, command, client})
 			requirement.type = req.type
 			return requirement
 		}else{

@@ -3,7 +3,8 @@ module.exports = ({time, response, responseDM, run}) => {
 		condition: (msg, args, client, command, req) => {
 			if(msg.channel.type !== 0){ return null }
 			const cooldown = (req.cooldowns[msg.guild.id] || 0) - Math.round(new Date().getTime() / 1000)
-			return [ cooldown < 0, { cooldown, guild: msg.guild.name, user: msg.author.username } ]
+			args.reqGuildCooldown = { cooldown, guild: msg.guild.name, user: msg.author.username }
+			return cooldown < 0
 		},
 		cooldowns : {},
 		time,
@@ -19,16 +20,16 @@ module.exports = ({time, response, responseDM, run}) => {
 	}
 	if(response){
 		if(typeof(response) === 'string'){
-			req.response = (msg, args, client, command, req, ctx) => replacement(response, ctx)
+			req.response = (msg, args, client, command, req) => replacement(response, args.reqGuildCooldown)
 		}else if(typeof(response) === 'function'){
-			req.response = (msg, args, client, command, req, ctx) => replacement(response(msg, args, client, command, req, ctx), ctx)
+			req.response = (msg, args, client, command, req) => replacement(response(msg, args, client, command, req), args.reqGuildCooldown)
 		}
 	}
 	if(responseDM){
 		if(typeof(responseDM) === 'string'){
-			req.responseDM = (msg, args, client, command, req, ctx) => replacement(responseDM, ctx)
+			req.responseDM = (msg, args, client, command, req) => replacement(responseDM, args.reqGuildCooldown)
 		}else if(typeof(responseDM) === 'function'){
-			req.responseDM = (msg, args, client, command, req, ctx) => replacement(responseDM(msg, args, client, command, req, ctx), ctx)
+			req.responseDM = (msg, args, client, command, req) => replacement(responseDM(msg, args, client, command, req), args.reqGuildCooldown)
 		}
 	}
 	return req
