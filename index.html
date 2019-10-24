@@ -45,15 +45,18 @@
     <section>
         <article><h1>Aghanim</h1>
 <p><strong>Aghanim</strong> is a Command Client for create <em><strong>Discord</strong></em> bots with <a href="https://github.com/abalabahaha/eris">Eris</a> in NodeJS based on <a href="https://geo1088.github.io/yuuko">Yuuko</a></p>
-<p><strong>Author</strong> : <a href="https://desvelao.github.io/profile/">Desvelao^^</a>  <strong>Version</strong>: <code>v0.1.0</code></p>
+<p><strong>Author</strong> : <a href="https://desvelao.github.io/profile/">Desvelao^^</a>  <strong>Version</strong>: <code>v0.2.0</code></p>
 <h2>Features</h2>
 <ul>
+<li>Add Commands/Subcommands and Components from files or directories</li>
 <li>Support for Subcommands (Command should be exist)</li>
-<li>Commands with user cooldown</li>
-<li>Add Components that can fire at some Eris events or add custom functionality to your bot</li>
+<li>Builtin commands requirements or define yours</li>
+<li>Define Commands as objects or use Command class</li>
+<li>Define Components as object or a class that extends of Component class</li>
+<li>Define methods to run in some Eris events automatically with your Components</li>
 </ul>
 <h2>Using the bot</h2>
-<p>Usage information for the bot (the usable commands, default configuration, and other help topics) can be found in the wiki <a href="https://desvelao.github.io/aghanim/">here</a>.</p>
+<p>Usage information for the bot (the usable commands, default configuration, and other help topics) can be found <a href="https://desvelao.github.io/aghanim/">here</a>.</p>
 <h2>Using the package</h2>
 <p><strong>Aghanim's core</strong> is only available at <a href="https://github.com/Desvelao/aghanim">Github repository</a>. It extends <a href="https://github.com/abalabahaha/eris">Eris</a> and is basically an alternative to its CommandClient class.</p>
 <h3>Installation</h3>
@@ -81,7 +84,7 @@ client.addCategory('Fun','Fun commands')
 
 const pingCommand = new Command('ping', {
   category : 'Fun', help : 'Get Pong!', args : ''},
-  function (msg, args, client, command) {
+  async function(msg, args, client, command) {
   	msg.channel.createMessage('Pong!')
 })
 
@@ -118,7 +121,7 @@ client.connect()
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:executed">aghanim:command:executed</a></li><li><a href="Client.html#event:aghanim:command:pre">aghanim:command:pre</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create a category</a></li><li><a href="tutorial-6command-requirements.html">Command requirements</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

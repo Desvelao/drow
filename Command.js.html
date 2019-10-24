@@ -26,7 +26,8 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** Class representing a command. */
+            <pre class="prettyprint source linenums"><code>const CommandRequirements = require('./requirements')
+/** Class representing a command. */
 class Command {
 	/**
    * Create a command.
@@ -35,74 +36,71 @@ class Command {
    *     array, the first item of the array is used as the name and the rest of
    *     the items are set as aliases.
    * @param {object} options - Options of command
-   * @param {boolean} [options.guildOnly=false] - Command only can works in guilds
-   * @param {boolean} [options.dmOnly=false] - Command only can works in dm messages
-   * @param {string|array} [options.userOnly=false] - Command only can works in these users
-   * @param {boolean} [options.ownerOnly=false] - Command only can works in bot owner
-   * @param {string|array} [options.rolesCanUse=false] - Command only can works in guilds
-   * and members with roles
-   * @param {Command~check} [options.check=null] - Command only can works if this
-   * funciton return true
-   * @param {array|object} [options.permissions=null] - Command only can works if member
-   * in fuild has permissions
-   * @param {number} [options.cooldown=null] - Time in seconds
-   * @param {string} [options.cooldownMessage='Not yet! Ready in **&lt;cd>**s'] -
-   * Message sent if command is in cooldown for that user
-   * @param {string} [options.subcommandFrom=undefined] -
-   * Name of command that this commad is subcommand. It needs exists.
    * @param {string} [options.category='Default'] - Category from this command
    * @param {string} [options.help=''] - Description of command
    * @param {string} [options.args=''] - The command arguments
    * @param {boolean} [options.hide=false] - Hide command from default help command
    * @param {boolean} [options.enable=true] - Enable/Disable the command
-   * @param {boolean} [options.await=false] - Await to resolve the command for put cooldown
-	 *
+   * @param {string} [options.childOf=undefined] - Parent command name
+   * @param {Array} [options.requirements=[]] - Requirements are mapped in client.addCommand
+   * @param {object} [options.hooks = {}] - Command hooks.
+   * @param {Array&lt;function>} [options.hooks.pre=[]] - Hook pre run command.
+   * @param {Array&lt;function>} [options.hooks.executed=[]] - Hook after run command.
+   * @param {Array&lt;function>} [options.hooks.error=[]] - Hook fired when there an error with execution command.
+   * @param {object} [options.custom={}] - Define custom methods or properties to copy to command.
    * @param {Command~run} run - The function to be called when the command is executed.
+   * @param {string | function | EmbedMessageObject } response - Response to command. Ignore run function.
+   * @param {string | function | EmbedMessageObject } responseDM - DM response to command. Ignore run function.
    */
-	constructor(name, options, run) {
+	constructor(name, options = {}, run) {
 		if (Array.isArray(name)) {
 			/** @prop {string} - Name of Command */
 			[this.name] = name.splice(0, 1)
 			/** @prop {string[]} - Command aliases */
 			this.aliases = name
-		} else {
+		} else if(typeof(name) === "string") {
 			this.name = name
 			this.aliases = []
+		} else if(typeof(name) === "object") {
+			options = name
+			if (Array.isArray(options.name)) {
+				[this.name] = options.name.splice(0, 1)
+				this.aliases = options.name
+			} else if(typeof(options.name) === "string") {
+				this.name = options.name
+				this.aliases = []
+			}
 		}
 		if (!this.name) throw new Error('Name is required')
 		/** @prop {Command~run} - Run function of command */
-		this.run = run
-		if (!this.run) throw new Error('Run function is required')
+		this.run = run || options.run || async function(){}
 		/** @prop {string} - Description of command */
 		this.help = options.help || ''
+		/** @prop {string | EmbedMessageObject | function } - Response of command. If it exists, ignore run function. If function (msg, args, client, commad) */
+		this.response = options.response || ''
+		/** @prop {string | EmbedMessageObject | function } - Response of command with a direct message. If it exists, ignore run function. If function (msg, args, client, commad) */
+		this.responseDM = options.responseDM || ''
+		/** @prop {Command | undefined} - Parent Command */
+		this.parent = undefined
 		/** @prop {Command[]} - Subcommands of Command. */
-		this.subcommands = []
-		/** @prop {Command} - Parent Command */
-		this.upcommand = undefined
-		/** @prop {boolean} - Command responds to guilds messages */
-		this.guildOnly = options.guildOnly || false
-		/** @prop {boolean} - Command responds only to dm messages */
-		this.dmOnly = options.dmOnly || false
-		/** @prop {(false|string|string[])} - Command responds to specific users messages. False by default.*/
-		this.userOnly = typeof options.userOnly === 'string' ? [options.userOnly] : (Array.isArray(options.userOnly)) ? options.userOnly : false /* eslint no-nested-ternary : "off" */
-		/** @prop {boolean} - Command responds to owner messages */
-		this.ownerOnly = options.ownerOnly || false
-		/** @prop {(false|string|string[])} -
-		 * Command responds to specific members with roles. Message should be sent from a guild */
-		this.rolesCanUse = options.rolesCanUse || false
-		/** @prop {Command~check} - Custom requirements to execute the command */
-		this.check = options.check || null
-		/** @prop {(undefined|string[])} - Array of permissions in strings */
-		this.permissions = options.permissions || null
-		/** @prop {number|null} - Time in seconds that Command has cooldown for a user */
-		this.cooldown = options.cooldown || null
-		/** @prop {{string: number}} - Users cooldown */
-		this.cooldowns = {}
-		/** @prop {string} -
-		 * Message to responds when a Command is on cooldown. Replace "&lt;cd>" for seconds remaining */
-		this.cooldownMessage = options.cooldownMessage || 'Not yet! Ready in **&lt;cd>**s'
+		this.childs = []
+		/** @prop {array} - Command Requirements */
+		this.requirements = Array.isArray(options.requirements) ? options.requirements : [] // These requirements are mapped in client.addCommand
+		/** @prop {object} - Command Hooks */
+		this.hooks = {
+			pre: [], // Fired before run command
+			executed: [], // Fired after command is run
+			error: [] // Fired when there is an error running pre/executed hooks and response/run methods
+		}
+		if(options.hooks &amp;&amp; typeof(options.hooks) === 'object'){
+			Object.keys(this.hooks).forEach(key => {
+				const hook = this.hooks[key]
+				if(typeof(hook) !== 'function') throw new TypeError(`${hook} is not a function on ${this.name}`)
+				this.addHook(key, hook)
+			})
+		}
 		/** @prop {string|undefined} - Name of uppercomand */
-		this.subcommandFrom = options.subcommandFrom
+		this.childOf = options.childOf
 		/** @prop {string} - Command category. It should exist if not, will be 'Default' */
 		this.category = options.category || 'Default'
 		/** @prop {string} - Arguments for a command */
@@ -111,10 +109,10 @@ class Command {
 		this.hide = options.hide !== undefined ? options.hide : false // Hide command from help command
 		/** @prop {boolean} - Enable/Disable the command */
 		this.enable = options.enable !== undefined ? options.enable : true // Enable or disable command
-		/** @prop {boolean} - Await result comand and warning if return is undefined. */
-		this.await = options.await !== undefined ? options.await : false
 		/** @prop {Client} - Client instance */
 		this.client = undefined
+		/** @prop {object | undefined} - Custom props */
+		this.custom = undefined
 	}
 
 	/**
@@ -135,23 +133,6 @@ class Command {
     */
 
 	/**
-	* @callback Command~check
-	* A function to be called before execute a coomand.
-	* It's a custom requirement to execute the command. It should return true or false
-	* @param {Eris.Message} msg - The Eris message object that triggered the command.
-	*     For more information, see the Eris documentation:
-	*     {@link https://abal.moe/Eris/docs/Message}
-	* @param {args} args - An array of arguments passed to the command,
-	*     obtained by removing the command name and prefix from the message, then
-	*     splitting on spaces. To get the raw text that was passed to the
-	*     command, use `args.join(' ')`.
-	* @param {Client} client client instance that recieved the message triggering the
-    *     command.
-	* @param {Command} command - The name or alias used to call the command in
-	*     the message. Will be one of the values of `this.names`.
-	*/
-
-	/**
 	* All names that can be used to invoke the command - its primary name in
 	* addition to its aliases.
 	* @return {Array&lt;string>}
@@ -160,24 +141,54 @@ class Command {
 		return [this.name, ...this.aliases]
 	}
 
-	/**
-	 * Get cooldown for user
-	 * @param  {string} id - User id
-	 * @return {number}    - Time in seconds that command is in cooldown for that user
-	 */
-	getCooldown(id) {
-		return this.cooldowns[id] - Math.round(new Date().getTime() / 1000)
+	/** Add a requirement
+	* @param {object} requirement - Requirement to add. Inject a method to remove it.
+	*/
+	addRequirement(requirement) {
+		requirement.remove = () => this.removeRequirement(requirement)
+		this.requirements.push(requirement)
+		if(requirement.init){
+			requirement.init(this.client, this, requirement)
+		}
+	}
+
+	/** Remove a requirement
+	* @param {object} requirement - Requirement to remove.
+	*/
+	removeRequirement(requirement) {
+		this.requirements = this.requirements.filter(req => req !== requirement)
 	}
 
 	/**
-	 * Set cooldown for user
-	 * @param {string} id - User id
-	 * @param {number} [cd] - Set cooldown. If cd is defined, set to timestamp,
-	 * else add cooldown to now
+	 * Command hook
+	 * @callback CommandHook 
+	 * @param {Eris.Message} msg - Eris message 
+	 * @param {args} args - Arguments
+	 * @param {Client} client - Eris message 
+	 * @param {Command} command - Command
 	 */
-	setCooldown(id, cd) {
-		this.cooldowns[id] = cd !== undefined ?
-			cd : Math.round(new Date().getTime() / 1000) + this.cooldown
+
+	/** Add a hook
+	* @param {string} hookname - Hook name.
+	* @param {CommandHook} hook - Hook to add.Inject a method to remove it.
+	*/
+	addHook(hookname, hook){
+		if(!this.hooks[hookname]){throw new Error(`Add command hook error: ${hookname} not defined on ${this.name} command`)}
+		hook.remove = () => this.removeHook(hookname, hook)
+		this.hooks[hookname].push(hook)
+	}
+
+	/** Remove a hook
+	* @param {string} hookname - Hook name.
+	* @param {CommandHook} hook - Hook to remove.
+	*/
+	removeHook(hookname, hook){
+		if(!this.hooks[hookname]){throw new Error(`Add command hook error: ${hookname} not defined on ${this.name} command`)}
+		this.hooks[hookname] = this.hooks[hookname].filter(h => h !== hook)
+	}
+
+	runHook(hookname, ...args){
+		this.hooks[hookname].forEach(hook => hook(...args))
 	}
 
 	/** Throw a command error */
@@ -185,6 +196,24 @@ class Command {
 		throw new Error(message)
 	}
 }
+
+/**
+ * @typedef CommandRequirementObject
+ * @prop {string} type - Type requirement
+ * @prop {function} condition - If returns false, do first of response/resposneDM/run
+ * @prop {string|function|undefined} response - Reply with this response
+ * @prop {string|function|undefined} responseDM - Reply with this response by direct message
+ * @prop {function|undefined} run - Run this custom function
+ * @prop {function|undefined} init - Run when requirement is added to command
+ */
+
+ /**
+ * @callback CommandRequirementFunction
+ * @param {object} config - Config requirement
+ * @param {Command} config.command - Command
+ * @param {Client} config.command - Client
+ * @returns {CommandRequirementObject|Array&lt;CommandRequirementObject>}
+ */
 
 module.exports = Command
 </code></pre>
@@ -197,7 +226,7 @@ module.exports = Command
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:executed">aghanim:command:executed</a></li><li><a href="Client.html#event:aghanim:command:pre">aghanim:command:pre</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create a category</a></li><li><a href="tutorial-6command-requirements.html">Command requirements</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

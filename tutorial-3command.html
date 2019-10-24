@@ -29,39 +29,78 @@
 
 <article>
     <h3>Create a Command</h3>
-<pre class="prettyprint source lang-js"><code>//ping.js
+<pre class="prettyprint source lang-js"><code>// ping.js
 const { Command } = require('aghanim')
 
-module.exports = new Command('ping', {
-  category : 'Fun', help : 'Get Pong!', args : ''},
-  async function (msg, args, client, command) { 
-  	msg.channel.createMessage('Pong!')
+module.exports = new Command('ping', // command name
+	{ // options object
+		category : 'Fun',
+		help : 'Get Pong!',
+		args : '',
+		requirements: [], // Define requirements for this command. See command requirements tutorial
+		hooks : { // Add hooks to commnand
+			pre : [], // Array of hooks fired before command execution. function(msg, args, client, command)
+			executed : [], // Array of hooks fired after command execution. function(msg, args, client, command)
+			error: [] // Array of hooks fired if the command has some error. function(msg, args, client, command, error)
+		}
+		response: &quot;Pong!&quot;, // String or function(msg, args, client, commnad) that returns a string or EmbedMessageObject
+		responseDM: &quot;Pong by DM!&quot;, // String or function(msg, args, client, commnad) that returns a string or EmbedMessageObject
+	},
+	async function (msg, args, client, command) { // run function. Only execute if not options.response or options.responseDM
+		msg.channel.createMessage('Pong by run function!')
 })
 </code></pre>
+<p>Command execute first of: <code>response</code> &gt; <code>responseDM</code> &gt; <code>run</code></p>
 <h3>Add your command to your bot</h3>
-<pre class="prettyprint source lang-js"><code>	//index.js
-	//bot defined...
+<pre class="prettyprint source lang-js"><code>	// index.js
+	// bot defined...
 	const ping_command = require('./ping.js')
 	client.addCommmand(ping_command)
 
+	const path = require('path')
 	//You can import the file directly using addCommandFile method
-	client.addCommandFile(__dirname + '/ping.js')
+	client.addCommandFile(path.join(__dirname, '/ping.js'))
 
 	//Or you can import a directory of commands with addCommandDir method
-	client.addCommandDir(__dirname + 'path/to/commands')
+	client.addCommandDir(path.join(__dirname + 'path/to/commands'))
 </code></pre>
 <h3>Create a Subcommand</h3>
-<pre class="prettyprint source lang-js"><code>//pong.js
+<pre class="prettyprint source lang-js"><code>// pong.js
 const { Command } = require('aghanim')
 
-module.exports = new Command('pong', {
-  subcommandFrom : 'ping', // Upper/Parent command Command. It should be defined before add this subcommand
-  category : 'Fun', help : 'Get Pong!', args : ''},
-  async function (msg, args, client, command) {
-  	msg.channel.createMessage('Pong!')
-})
+module.exports = new Command('pong', 
+	{
+		childOf : 'ping', // Upper/Parent command Command. Parent command should be added before the subcommand
+		category : 'Fun',
+		help : 'Get Pong!',
+		args : ''
+	},
+	async function (msg, args, client, command) {
+		return msg.channel.createMessage('Pong!')
+	}
+)
 
-// This command will be fired with `[botPrefix]ping pong`
+// This command will be fired with `[client.prefix]ping pong`
+</code></pre>
+<h3>Command Object</h3>
+<p>Create a command as object too</p>
+<pre class="prettyprint source lang-js"><code>module.exports = {
+	name: 'ping',
+	category: 'Fun',
+	help: 'Get Pong!',
+	args: '',
+	requirements: [],
+	hooks : {
+		pre : [],
+		executed : [],
+		error: []
+	}
+	response: &quot;Pong!&quot;,
+	responseDM: &quot;Pong by DM!&quot;,
+	run: async (msg, args, client, command){
+		return msg.channel.createMesage('Pong by run function')
+	}
+}
 </code></pre>
 </article>
 
@@ -70,7 +109,7 @@ module.exports = new Command('pong', {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:executed">aghanim:command:executed</a></li><li><a href="Client.html#event:aghanim:command:pre">aghanim:command:pre</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create a category</a></li><li><a href="tutorial-6command-requirements.html">Command requirements</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

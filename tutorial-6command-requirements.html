@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Tutorial: Command requirements</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Tutorial: Command requirements</h1>
+
+    <section>
+
+<header>
+    
+
+    <h2>Command requirements</h2>
+</header>
+
+<article>
+    <p>You can create command requirements for each command or use builtin command requirements creators</p>
+<ul>
+<li><a href="#add-requirement">Add a requirement</a></li>
+<li><a href="#define-user-requirement">Define user builtin requirements</a></li>
+<li><a href="#builtin-requirement">Builtin requirements creators</a></li>
+</ul>
+<h3><div id="add-requirement">Add a requirement</div></h3>
+<pre class="prettyprint source lang-js"><code>// Defining a command as object
+module.exports = {
+	name: &quot;onlymecmd&quot;, // command.name
+	requirements: [
+		{
+			type: &quot;onlyme&quot; // set a type/name
+			condition: (msg, args, client, command, requirement) => { // function to evaluate. if returns false do first of response/responseDM/run methods
+				return msg.author.id === &quot;mydiscordid&quot;
+				// return null to ignore response/responseDM/run methods if some these aren't undefined
+				// you can return a context of this function if you return an array as [passCondition, conditionReqContext]
+				// for this example, you want to return author id to use in response/responseDM/run methods
+				// return [msg.author.id === &quot;mydiscordid&quot;, {authorID: msg.author.id}]
+			}
+			response: &quot;You don't have permissions to execute this command&quot; // string/function&lt;string/embed> => reply that string
+			// reponse can be a function too
+			// response: (msg, args, client, command, requirement, conditionReqContext) => returns string/embed
+			// response: (msg, args, client, command, requirement, conditionReqContext) => &quot;You don't have permissions to execute this command created by function&quot;
+			responseDM: &quot;DM: You don't have permissions to execute this command&quot; // string/function&lt;string/embed> => reply that string with a direct message
+			// reponseDM can be a function too
+			// responseDM: (msg, args, client, command, requirement, conditionReqContext) => returns string/embed
+			// responseDM: (msg, args, client, command, requirement, conditionReqContext) => &quot;DM: You don't have permissions to execute this command created by function&quot;
+			run: // custom function run(msg, args, client, command, requirement, conditionReqContext)
+			init: (client, command, requirement) => { 
+				// do something when this requirement is added to commnad, for example add a hook to command
+			}
+			// You can add other props to be accesible through requirement variable
+		}
+		// You can add more requirements to check. Resply with first requirement failed to pass
+	]
+	run: (msg, args, client, command) => msg.channel.createMessage(&quot;This is my command&quot;) // If pass all command requirements, this will be run
+}
+</code></pre>
+<h3><div id="define-user-requirement">Define user builtin requirements</div></h3>
+<p>Define a custom requirement or set of them to import easily from a command definition</p>
+<pre class="prettyprint source lang-js"><code>client.defineCommandRequirement(requirement) // requirement can be a object or a function
+
+// Requiment object
+client.defineCommandRequirement({
+	type: 'my.requirement', // name to inject in commands if these have it as requirement
+	condition: (msg, args, client, command, requirement) => { // Returns false to run first of response/responseDM/run actions
+		return msg.author.id === &quot;mydiscordID&quot;
+		// return null to ignore response/responseDM/run methods if some of these are defined
+		// return [true/false, conditionReqContext] to fail requirement and pass a context to response/responseDM/run actions
+	}
+	response: &quot;You can't use this commnad&quot;
+})
+
+// Requirement function
+client.defineCommandRequirement(function guildadmin({command, client}){ // function name will be the name to inject in commands
+	// should be return a requirement or array of requirement (useful to pack multiple requirements as one)
+	return {
+		type: 'my.requirement', // name to inject in commands if these have it as requirement
+		condition: (msg, args, client, command, requirement) => { // Returns false to run first of response/responseDM/run actions
+			return msg.author.id === &quot;mydiscordID&quot;
+			// return null to ignore response/responseDM/run methods if some of these are defined
+			// return [true/false, conditionReqContext] to fail requirement and pass a context to response/responseDM/run actions
+		}
+		response: &quot;You can't use this commnad&quot;
+	}
+	// or return array of requirements
+	return [
+		{
+			type: 'only.for.guild',
+			condition: (msg, args, client, command, requirement) => {
+				return msg.channel.guild && true // remember return true/false/null/[true/false, context]
+			}
+			response: &quot;Sorry this command is only avaliable in guilds&quot;
+		},
+		{
+			type: 'member.with.role',
+			condition: (msg, args, client, command, requirement) => {
+				const member = msg.channel.guild.members.get(msg.author.id)
+				if(!member){return false}
+				let { role } = req
+				role = role.map(r => r.toLowerCase())
+				return member.roles.some( r => roles.includes(msg.channel.guild.roles.get(r).name.toLowerCase()) )
+			},
+			role: &quot;admin&quot;
+			response: &quot;Sorry this command is only for admins&quot;
+		}
+		// You can inject some builtin commands requirements or user defined too
+	]
+})
+
+// injecting a defined command requirement in command
+module.exports = {
+	name: &quot;admin&quot;, // command.name
+	requirements: [&quot;guildadmin&quot;] // will inject requirements defined below
+	run: async (msg, args, client, command) => {
+		// do something
+	}
+}
+</code></pre>
+<h3><div id="builtin-requirement">Builtin requirements creators</div></h3>
+<p>These are functions builtin that create requirements objects. To use them:</p>
+<pre class="prettyprint source lang-js"><code>// Defining a command as object
+module.exports = {
+	name: &quot;server&quot;, // command.name
+	requirements: [
+		{
+			type: &quot;guild.only&quot; // &quot;guild.only&quot; is a builtin requirement. this requirement only allow execution if message coming from a guild.
+			// This object is passed to a command requirement creator function that returns a requirement object
+			response: &quot;This command only avaliable in guild&quot; // Resplye with that if message doesn't come from a guild
+			// responseDM: or reply with a dm
+			// run: or create a custom funcition 
+		}
+		// You can add more requirements to check. Resply with first requirement failed to pass
+	]
+	run: (msg, args, client, command) => msg.channel.createMessage(&quot;This is my command&quot;) // Run this pass all requirements
+}
+</code></pre>
+<h4>Command requirements creators:</h4>
+<ul>
+<li>
+<p>Channels/Guilds/Users allow/deny:</p>
+<ul>
+<li><code>channel.allow</code>: allow command on channels whose ids are on channels property</li>
+<li><code>channel.deny</code>: deny command on channels whose ids are on channels property</li>
+<li><code>guild.allow</code>: allow command on channels whose ids are on channels property</li>
+<li><code>guild.deny</code>: deny command on channels whose ids are on channels property</li>
+<li><code>user.allow</code>: allow command on channels whose ids are on channels property</li>
+<li><code>user.deny</code>: deny command on channels whose ids are on channels property<pre class="prettyprint source lang-js"><code>{
+// command definition...
+	requirements : [
+		{
+			type: 'channel.allow', // map to the builtin requirement creator. Same interface for requirements from below
+			store: [], // array of strings channles ids
+			response, // optional
+			responseDM, // optional
+			run, // optional
+		}
+	]
+}
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p>Channels/Guilds/Users cooldown:</p>
+<ul>
+<li><code>channel.cooldown</code>: allow command on channels if is not in cooldown</li>
+<li><code>guild.cooldown</code>: allow command on channels if is not in cooldown</li>
+<li><code>user.cooldown</code>: allow command on channels if is not in cooldown<pre class="prettyprint source lang-js"><code>{
+// command definition...
+	requirements : [
+		{
+			type: 'channel.cooldown', // map to the builtin requirement creator. Same interface for requirements from below
+			time: 60, // cooldown time in seconds. Set after a suscefully command execution
+			response, // optional
+			responseDM, // optional
+			run, // optional
+		}
+	]
+}
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p>Member</p>
+<ul>
+<li>
+<p><code>member.has.permisions</code>: allow command on guild for member with permissions</p>
+<pre class="prettyprint source lang-js"><code>{
+// command definition...
+	requirements : [
+		{
+			type: 'member.has.permisions', // map to the builtin requirement creator.
+			permissions: { // permision json. See more on &lt;a href=&quot;#add-requirement&quot;>Add a requirement&lt;/a> https://abal.moe/Eris/docs/Permission
+				manageMessages: true,
+			}
+			response, // optional
+			responseDM, // optional
+			run, // optional
+		}
+	]
+}
+</code></pre>
+</li>
+<li>
+<p><code>member.has.role</code>: allow command on guild for member with a role or some of array of roles.</p>
+<pre class="prettyprint source lang-js"><code>{
+// command definition...
+	requirements : [
+		{
+			type: 'member.has.permisions', // map to the builtin requirement creator.
+			role: &quot;Admin&quot;, // no case sensitive. Admit pass an array of role names
+			response, // optional
+			responseDM, // optional
+			run, // optional
+		}
+	]
+}
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p>Miscelaneous</p>
+<ul>
+<li>
+<p><code>dm.only</code>: allow command on direct message only</p>
+</li>
+<li>
+<p><code>guild.only</code>: allow command on guild only</p>
+</li>
+<li>
+<p><code>owner.only</code>: allow command for bot owner only</p>
+<pre class="prettyprint source lang-js"><code>// object definition...
+{
+	requirements : [
+		{
+			type: 'dm.only', // map to the builtin requirement creator.
+			response, // optional
+			responseDM, // optional
+			run, // optional
+		},
+		//or
+		'dm.only' // if you dont want configure responses or run methods
+	]
+}
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+</article>
+
+</section>
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:executed">aghanim:command:executed</a></li><li><a href="Client.html#event:aghanim:command:pre">aghanim:command:pre</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create a category</a></li><li><a href="tutorial-6command-requirements.html">Command requirements</a></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

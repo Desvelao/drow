@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Command<span class="signature">(name, options, run)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Command<span class="signature">(name, options, run, response, responseDM)</span><span class="type-signature"></span></h2>
         
             <div class="class-description">Class representing a command.</div>
         
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="Command"><span class="type-signature"></span>new Command<span class="signature">(name, options, run)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Command"><span class="type-signature"></span>new Command<span class="signature">(name, options, run, response, responseDM)</span><span class="type-signature"></span></h4>
     
 
     
@@ -157,403 +157,6 @@
     </thead>
 
     <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>guildOnly</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">Command only can works in guilds</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>dmOnly</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">Command only can works in dm messages</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>userOnly</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">array</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">Command only can works in these users</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ownerOnly</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">Command only can works in bot owner</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>rolesCanUse</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">array</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">Command only can works in guildsand members with roles</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>check</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Command.html#~check">Command~check</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">Command only can works if thisfunciton return true</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>permissions</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">array</span>
-|
-
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">Command only can works if memberin fuild has permissions</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cooldown</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">Time in seconds</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cooldownMessage</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    'Not yet! Ready in **&lt;cd>**s'
-                
-                </td>
-            
-
-            <td class="description last">Message sent if command is in cooldown for that user</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>subcommandFrom</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">Name of command that this commad is subcommand. It needs exists.</td>
-        </tr>
-
     
 
         <tr>
@@ -753,13 +356,13 @@
 
         <tr>
             
-                <td class="name"><code>await</code></td>
+                <td class="name"><code>childOf</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">string</span>
 
 
             
@@ -780,12 +383,274 @@
             
                 <td class="default">
                 
-                    false
+                </td>
+            
+
+            <td class="description last">Parent command name</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requirements</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
                 
                 </td>
             
 
-            <td class="description last">Await to resolve the command for put cooldown</td>
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last">Requirements are mapped in client.addCommand</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>hooks</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last">Command hooks.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pre</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;function()></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last">Hook pre run command.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>executed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;function()></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last">Hook after run command.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;function()></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last">Hook fired when there an error with execution command.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>custom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last">Define custom methods or properties to copy to command.</td>
         </tr>
 
     
@@ -816,6 +681,64 @@
             
 
             <td class="description last">The function to be called when the command is executed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>response</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">function</span>
+|
+
+<span class="param-type"><a href="global.html#EmbedMessageObject">EmbedMessageObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Response to command. Ignore run function.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>responseDM</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">function</span>
+|
+
+<span class="param-type"><a href="global.html#EmbedMessageObject">EmbedMessageObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">DM response to command. Ignore run function.</td>
         </tr>
 
     
@@ -856,7 +779,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line34">line 34</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line27">line 27</a>
     </li></ul></dd>
     
 
@@ -994,7 +917,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line39">line 39</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line32">line 32</a>
     </li></ul></dd>
     
 
@@ -1100,113 +1023,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line81">line 81</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="await"><span class="type-signature"></span>await<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Await result comand and warning if return is undefined.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line87">line 87</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line79">line 79</a>
     </li></ul></dd>
     
 
@@ -1312,7 +1129,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line79">line 79</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line77">line 77</a>
     </li></ul></dd>
     
 
@@ -1330,7 +1147,7 @@
 
         
             
-<h4 class="name" id="check"><span class="type-signature"></span>check<span class="type-signature"></span></h4>
+<h4 class="name" id="childOf"><span class="type-signature"></span>childOf<span class="type-signature"></span></h4>
 
 
 
@@ -1369,7 +1186,10 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="Command.html#~check">Command~check</a></span>
+<span class="param-type">string</span>
+|
+
+<span class="param-type">undefined</span>
 
 
             
@@ -1379,7 +1199,7 @@
 
             
 
-            <td class="description last">Custom requirements to execute the command</td>
+            <td class="description last">Name of uppercomand</td>
         </tr>
 
     
@@ -1418,7 +1238,113 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line66">line 66</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line75">line 75</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="childs"><span class="type-signature"></span>childs<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="Command.html">Command</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Subcommands of Command.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -1524,7 +1450,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line89">line 89</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -1542,7 +1468,7 @@
 
         
             
-<h4 class="name" id="cooldown"><span class="type-signature"></span>cooldown<span class="type-signature"></span></h4>
+<h4 class="name" id="custom"><span class="type-signature"></span>custom<span class="type-signature"></span></h4>
 
 
 
@@ -1581,10 +1507,10 @@
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">object</span>
 |
 
-<span class="param-type">null</span>
+<span class="param-type">undefined</span>
 
 
             
@@ -1594,7 +1520,7 @@
 
             
 
-            <td class="description last">Time in seconds that Command has cooldown for a user</td>
+            <td class="description last">Custom props</td>
         </tr>
 
     
@@ -1633,325 +1559,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line70">line 70</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="cooldownMessage"><span class="type-signature"></span>cooldownMessage<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Message to responds when a Command is on cooldown. Replace "<cd>" for seconds remaining</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line75">line 75</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="cooldowns"><span class="type-signature"></span>cooldowns<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Users cooldown</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line72">line 72</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="dmOnly"><span class="type-signature"></span>dmOnly<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Command responds only to dm messages</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line57">line 57</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line87">line 87</a>
     </li></ul></dd>
     
 
@@ -2057,113 +1665,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line85">line 85</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="guildOnly"><span class="type-signature"></span>guildOnly<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Command responds to guilds messages</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line55">line 55</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line83">line 83</a>
     </li></ul></dd>
     
 
@@ -2269,7 +1771,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line49">line 49</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -2375,7 +1877,113 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line83">line 83</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line81">line 81</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="hooks"><span class="type-signature"></span>hooks<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Command Hooks</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line62">line 62</a>
     </li></ul></dd>
     
 
@@ -2437,7 +2045,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line131">line 131</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line112">line 112</a>
     </li></ul></dd>
     
 
@@ -2455,7 +2063,7 @@
 
         
             
-<h4 class="name" id="ownerOnly"><span class="type-signature"></span>ownerOnly<span class="type-signature"></span></h4>
+<h4 class="name" id="parent"><span class="type-signature"></span>parent<span class="type-signature"></span></h4>
 
 
 
@@ -2494,116 +2102,10 @@
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type"><a href="Command.html">Command</a></span>
+|
 
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Command responds to owner messages</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line61">line 61</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="permissions"><span class="type-signature"></span>permissions<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
 <span class="param-type">undefined</span>
-|
-
-<span class="param-type">Array.&lt;string></span>
 
 
             
@@ -2613,7 +2115,7 @@
 
             
 
-            <td class="description last">Array of permissions in strings</td>
+            <td class="description last">Parent Command</td>
         </tr>
 
     
@@ -2652,7 +2154,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line68">line 68</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -2670,7 +2172,7 @@
 
         
             
-<h4 class="name" id="rolesCanUse"><span class="type-signature"></span>rolesCanUse<span class="type-signature"></span></h4>
+<h4 class="name" id="requirements"><span class="type-signature"></span>requirements<span class="type-signature"></span></h4>
 
 
 
@@ -2709,13 +2211,119 @@
             <td class="type">
             
                 
-<span class="param-type">false</span>
-|
+<span class="param-type">array</span>
 
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Command Requirements</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line60">line 60</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="response"><span class="type-signature"></span>response<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+
+            <td class="type">
+            
+                
 <span class="param-type">string</span>
 |
 
-<span class="param-type">Array.&lt;string></span>
+<span class="param-type"><a href="global.html#EmbedMessageObject">EmbedMessageObject</a></span>
+|
+
+<span class="param-type">function</span>
 
 
             
@@ -2725,7 +2333,7 @@
 
             
 
-            <td class="description last">Command responds to specific members with roles. Message should be sent from a guild</td>
+            <td class="description last">Response of command. If it exists, ignore run function. If function (msg, args, client, commad)</td>
         </tr>
 
     
@@ -2764,7 +2372,119 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line64">line 64</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line52">line 52</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="responseDM"><span class="type-signature"></span>responseDM<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type"><a href="global.html#EmbedMessageObject">EmbedMessageObject</a></span>
+|
+
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Response of command with a direct message. If it exists, ignore run function. If function (msg, args, client, commad)</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line54">line 54</a>
     </li></ul></dd>
     
 
@@ -2870,440 +2590,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line46">line 46</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="subcommandFrom"><span class="type-signature"></span>subcommandFrom<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">undefined</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Name of uppercomand</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line77">line 77</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="subcommands"><span class="type-signature"></span>subcommands<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;<a href="Command.html">Command</a>></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Subcommands of Command.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line51">line 51</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="upcommand"><span class="type-signature"></span>upcommand<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Command.html">Command</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Parent Command</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line53">line 53</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="userOnly"><span class="type-signature"></span>userOnly<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">false</span>
-|
-
-<span class="param-type">string</span>
-|
-
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Command responds to specific users messages. False by default.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line59">line 59</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -3324,6 +2611,303 @@
 
     
         <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="addHook"><span class="type-signature"></span>addHook<span class="signature">(hookname, hook)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Add a hook
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>hookname</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Hook name.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>hook</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#CommandHook">CommandHook</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Hook to add.Inject a method to remove it.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line147">line 147</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="addRequirement"><span class="type-signature"></span>addRequirement<span class="signature">(requirement)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Add a requirement
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>requirement</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Requirement to add. Inject a method to remove it.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line119">line 119</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         
             
@@ -3383,7 +2967,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line156">line 156</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line167">line 167</a>
     </li></ul></dd>
     
 
@@ -3419,7 +3003,7 @@
     
 
     
-    <h4 class="name" id="getCooldown"><span class="type-signature"></span>getCooldown<span class="signature">(id)</span><span class="type-signature"> &rarr; {number}</span></h4>
+    <h4 class="name" id="removeHook"><span class="type-signature"></span>removeHook<span class="signature">(hookname, hook)</span><span class="type-signature"></span></h4>
     
 
     
@@ -3427,7 +3011,7 @@
 
 
 <div class="description">
-    Get cooldown for user
+    Remove a hook
 </div>
 
 
@@ -3463,7 +3047,7 @@
 
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>hookname</code></td>
             
 
             <td class="type">
@@ -3479,7 +3063,30 @@
 
             
 
-            <td class="description last">User id</td>
+            <td class="description last">Hook name.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>hook</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#CommandHook">CommandHook</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Hook to remove.</td>
         </tr>
 
     
@@ -3520,7 +3127,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line140">line 140</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line157">line 157</a>
     </li></ul></dd>
     
 
@@ -3545,28 +3152,6 @@
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    - Time in seconds that command is in cooldown for that user
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">number</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -3578,7 +3163,7 @@
     
 
     
-    <h4 class="name" id="setCooldown"><span class="type-signature"></span>setCooldown<span class="signature">(id, cd<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="removeRequirement"><span class="type-signature"></span>removeRequirement<span class="signature">(requirement)</span><span class="type-signature"></span></h4>
     
 
     
@@ -3586,7 +3171,7 @@
 
 
 <div class="description">
-    Set cooldown for user
+    Remove a requirement
 </div>
 
 
@@ -3610,8 +3195,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -3624,64 +3207,23 @@
 
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>requirement</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">object</span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last">User id</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cd</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Set cooldown. If cd is defined, set to timestamp,else add cooldown to now</td>
+            <td class="description last">Requirement to remove.</td>
         </tr>
 
     
@@ -3722,7 +3264,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line150">line 150</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line130">line 130</a>
     </li></ul></dd>
     
 
@@ -3759,208 +3301,6 @@
         <h3 class="subsection-title">Type Definitions</h3>
 
         
-                
-
-    
-
-    
-    <h4 class="name" id="~check"><span class="type-signature"></span>check<span class="signature">(msg, args, client, command)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>msg</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Eris.Message</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The Eris message object that triggered the command.    For more information, see the Eris documentation:    <a href="https://abal.moe/Eris/docs/Message">https://abal.moe/Eris/docs/Message</a></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#args">args</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An array of arguments passed to the command,    obtained by removing the command name and prefix from the message, then    splitting on spaces. To get the raw text that was passed to the    command, use `args.join(' ')`.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>client</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Client.html">Client</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">client instance that recieved the message triggering the    command.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>command</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Command.html">Command</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The name or alias used to call the command in    the message. Will be one of the values of `this.names`.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line109">line 109</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
                 
 
     
@@ -4132,7 +3472,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line92">line 92</a>
+        <a href="Command.js.html">Command.js</a>, <a href="Command.js.html#line90">line 90</a>
     </li></ul></dd>
     
 
@@ -4176,7 +3516,7 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:beforerun">aghanim:command:beforerun</a></li><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create Categories</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:executed">aghanim:command:executed</a></li><li><a href="Client.html#event:aghanim:command:pre">aghanim:command:pre</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create a category</a></li><li><a href="tutorial-6command-requirements.html">Command requirements</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
