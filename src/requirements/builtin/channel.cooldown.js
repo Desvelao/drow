@@ -1,12 +1,12 @@
 module.exports = ({time, response, responseDM, run}) => {
-	const req = {
-		condition: (msg, args, client, command, req) => {
-			if(msg.channel.type === 1){ return null }
+	const requirement = {
+		validate: (msg, args, client, command, req) => {
+			if (msg.channel.type === 1) { return null }
 			const cooldown = (req.cooldowns[msg.channel.id] || 0) - Math.round(new Date().getTime() / 1000)
 			args.reqChannelCooldown = { cooldown, channel: msg.channel.name, user: msg.author.username }
 			return cooldown < 0
 		},
-		cooldowns : {},
+		cooldowns: {},
 		time,
 		response,
 		responseDM,
@@ -18,24 +18,23 @@ module.exports = ({time, response, responseDM, run}) => {
 			})
 		} 
 	}
-	if(response){
-		if(typeof(response) === 'string'){
-			req.response = (msg, args, client, command, req) => replacement(response, args.reqChannelCooldown)
-		}else if(typeof(response) === 'function'){
-			req.response = (msg, args, client, command, req) => replacement(response(msg, args, client, command, req), args.reqChannelCooldown)
+	if (response) {
+		if (typeof response === 'string') {
+			requirement.response = (msg, args, client, command, req) => replacement(response, args.reqChannelCooldown)
+		} else if (typeof response === 'function') {
+			requirement.response = (msg, args, client, command, req) => replacement(response(msg, args, client, command, req), args.reqChannelCooldown)
 		}
 	}
-	if(responseDM){
-		if(typeof(responseDM) === 'string'){
-			req.responseDM = (msg, args, client, command, req) => replacement(responseDM, args.reqChannelCooldown)
-		}else if(typeof(responseDM) === 'function'){
-			req.responseDM = (msg, args, client, command, req) => replacement(responseDM(msg, args, client, command, req), args.reqChannelCooldown)
+	if (responseDM) {
+		if (typeof responseDM === 'string') {
+			requirement.responseDM = (msg, args, client, command, req) => replacement(responseDM, args.reqChannelCooldown)
+		} else if (typeof responseDM === 'function') {
+			requirement.responseDM = (msg, args, client, command, req) => replacement(responseDM(msg, args, client, command, req), args.reqChannelCooldown)
 		}
 	}
-	return req
+	return requirement
 }
 
-const replacement = (response, {cooldown, channel, user}) => 
-	response.replace(new RegExp('%cd%', 'g'), cooldown)
-		.replace(new RegExp('%channel%', 'g'), channel)
-		.replace(new RegExp('%user%', 'g'), user)
+const replacement = (response, { cooldown, channel, user }) => response.replace(new RegExp('%cd%', 'g'), cooldown)
+	.replace(new RegExp('%channel%', 'g'), channel)
+	.replace(new RegExp('%user%', 'g'), user)

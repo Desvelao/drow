@@ -2,10 +2,10 @@ const Eris = require('eris')
 const glob = require('glob')
 const path = require('path')
 const Logger = require('another-logger')
+const reload = require('require-reload')(require)
 const Command = require('./Command')
 const Category = require('./Category')
 const Component = require('./Component')
-const reload = require('require-reload')(require)
 const builtinCommandRequirements = require('./requirements')
 
 const DEFAULT_CATEGORY = 'Default'
@@ -14,7 +14,7 @@ const DEFAULT_CATEGORY = 'Default'
 const logger = new Logger({
 	label: 'Aghanim',
 	timestamps: true,
-	levels: { 
+	levels: {
 		dev: { style: 'magenta' },
 		commandrunerror: { text: 'command:run:error', style: 'red' },
 		componentrunerror: { text: 'component:run:error', style: 'red' },
@@ -73,7 +73,7 @@ class Client extends Eris.Client {
 		this.setup = {}
 		// /** @prop {Object} - Context Extension */
 		// this.contextExtension = {}
-		
+
 		this._ready = false
 		this._commandsRequirements = {}
 
@@ -130,13 +130,13 @@ class Client extends Eris.Client {
 					 * @param  {string|EmbedMessageObject} content - Message content to send
 					 * @param  {object} file - File to send
 					 */
-					this.owner.send = function(content, file) {
+					this.owner.send = function sendOwner(content, file) {
 						channel.createMessage(content, file)
 					}
 				})
 
 				this.handleEvent('ready')()
-			})		
+			})
 		}).on('error', (err) => {
 			logger.error(err)
 			/**
@@ -173,24 +173,21 @@ class Client extends Eris.Client {
 						helpMessage += cmds.filter(c => !c.hide).map(c => `\`${client.prefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${c.childs.length ? '\n' + c.childs.filter(s => !s.hide).map(s => `  · \`${s.name}${s.args ? ' ' + s.args : ''}\` - ${s.help}`).join('\n') : ''}`)
 							.join('\n')
 					}
+				} else if (categories.length) {
+					helpMessage += client.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${client.prefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + client.setup.helpMessageAfterCategories
 				} else {
-					if(categories.length){
-						helpMessage += client.categories.filter(c => !c.hide).map(c => `**${c.name}** \`${client.prefix}help ${c.name.toLowerCase()}\` - ${c.help}`).join('\n') + '\n\n' + client.setup.helpMessageAfterCategories
-					}else{
-						const cmds = client.getCommandsOfCategories("Default")
-						if (!cmds) {
-							helpMessage += "No commands"
-						} else {
-							helpMessage += cmds.filter(c => !c.hide).map(c => `\`${client.prefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${c.childs.length ? '\n' + c.childs.filter(s => !s.hide).map(s => `  · \`${s.name}${s.args ? ' ' + s.args : ''}\` - ${s.help}`).join('\n') : ''}`)
-								.join('\n')
-						}
+					const cmds = client.getCommandsOfCategories('Default')
+					if (!cmds) {
+						helpMessage += 'No commands'
+					} else {
+						helpMessage += cmds.filter(c => !c.hide).map(c => `\`${client.prefix}${c.name}${c.args ? ' ' + c.args : ''}\` - ${c.help}${c.childs.length ? '\n' + c.childs.filter(s => !s.hide).map(s => `  · \`${s.name}${s.args ? ' ' + s.args : ''}\` - ${s.help}`).join('\n') : ''}`)
+							.join('\n')
 					}
 				}
 				if (!client.setup.helpDM) {
 					return msg.channel.createMessage(helpMessage)
-				} else {
-					return msg.author.getDMChannel().then(channel => channel.createMessage(helpMessage))
 				}
+				return msg.author.getDMChannel().then(channel => channel.createMessage(helpMessage))
 			}))
 		}
 	}
@@ -216,13 +213,10 @@ class Client extends Eris.Client {
 		// 	command,
 		// 	client: this
 		// }, this.contextExtension)
-
-		
 		try {
-			if (!command || !args ) return
+			if (!command || !args) return
 			const notpass = !(await this.checkRequirements(msg, args, this, command))
-			if(notpass) return
-	
+			if (notpass) return
 			/**
 			 * Fired before a command is executed. Don't cant stop command of running
 			 * @event Client#aghanim:command:pre
@@ -233,48 +227,46 @@ class Client extends Eris.Client {
 			 */
 			this.emit('aghanim:command:pre', msg, args, this, command)
 			await command.runHook('pre', msg, args, this, command)
-			if(command.response){
-				switch(typeof(command.response)){
-					case "string":{
-						await msg.channel.createMessage(command.response)
-						break
-					}
-					case "function":{
-						const response = command.response(msg, args, this, command)
-						await msg.channel.createMessage(response)
-						break
-					}
-					case "object":{
-						await msg.channel.createMessage(command.response)
-						break
-					}
-					default:{
+			if (command.response) {
+				switch (typeof command.response) {
+				case 'string': {
+					await msg.channel.createMessage(command.response)
+					break
+				}
+				case 'function': {
+					const response = command.response(msg, args, this, command)
+					await msg.channel.createMessage(response)
+					break
+				}
+				case 'object': {
+					await msg.channel.createMessage(command.response)
+					break
+				}
+				default: {
 
-					}
 				}
-			}else if(command.responseDM){
-				switch(typeof(command.responseDM)){
-					case "string":{
-						await msg.channel.createMessage(command.responseDM)
-						break
-					}
-					case "function":{
-						const responseDM = command.responseDM(msg, args, this, command)
-						await msg.channel.createMessage(responseDM)
-						break
-					}
-					case "object":{
-						await msg.channel.createMessage(command.responseDM)
-						break
-					}
-					default:{
-						
-					}
 				}
-			}else{
+			} else if (command.responseDM) {
+				switch (typeof command.responseDM) {
+				case 'string': {
+					await msg.channel.createMessage(command.responseDM)
+					break
+				}
+				case 'function': {
+					const responseDM = command.responseDM(msg, args, this, command)
+					await msg.channel.createMessage(responseDM)
+					break
+				}
+				case 'object': {
+					await msg.channel.createMessage(command.responseDM)
+					break
+				}
+				default: {
+
+				}
+				}
+			} else {
 				const value = await command.run(msg, args, this, command)
-				// 	if (val === undefined) { logger.warn(`${command.name} returned a promise with undefined value`) }
-
 			}
 			/**
 			 * Fired after a command is executed. Don't cant stop command of running
@@ -286,7 +278,7 @@ class Client extends Eris.Client {
 			 */
 			this.emit('aghanim:command:executed', msg, args, this, command)
 			await command.runHook('executed', msg, args, this, command)
-		}catch(err) {
+		} catch (err) {
 			/**
 			 * Fired when a command got an error executing the run function
 			 * @event Client#aghanim:command:error
@@ -298,14 +290,13 @@ class Client extends Eris.Client {
 			 */
 			logger.commandrunerror(`${command.name} - ${err} - ${err.stack}`)
 			this.emit('aghanim:command:error', err, msg, args, this, command)
-			try{
+			try {
 				await command.runHook('error', msg, args, this, command, err)
-			}catch(errhook){
+			} catch (errhook) {
 				logger.commandrunerror(`${command.name} - ${errhook} - ${errhook.stack}`)
 				this.emit('aghanim:command:error', errhook, msg, args, this, command)
 			}
 		}
-
 	}
 
 	handleEvent(eventname) {
@@ -338,9 +329,7 @@ class Client extends Eris.Client {
 	 * @param {msg} msg - Eris Message.
 	 * @param {Client} client - Client instance.
 	 */
-	extendCommandArgs(args, msg, client) {
-
-	}
+	extendCommandArgs(args, msg, client) { } /* eslint class-methods-use-this: "off" */
 
 	_addFromDirectory(dirname, func) {
 		if (!dirname.endsWith('/')) dirname += '/'
@@ -354,8 +343,8 @@ class Client extends Eris.Client {
 	 * @param {Command | object} command - The command to add to the bot.
 	 * @returns {Command} - Command added
 	 */
-	addCommand(command) {
-		if (!(command instanceof Command) && typeof(command) === 'object') { // allow command as object and create it
+	addCommand(command) { /* eslint consistent-return:"off" */
+		if (!(command instanceof Command) && typeof command === 'object') { // allow command as object and create it
 			command = new Command(command)
 		}
 		if (!(command instanceof Command)) throw new TypeError('Not a command') // throw error if not a Command instance or class extending of command
@@ -364,9 +353,9 @@ class Client extends Eris.Client {
 			logger.warn(`Category not found for ${command.name}. Established as ${DEFAULT_CATEGORY}`)
 		}
 		command.client = this // inject client on command
-		const requirements = command.requirements
+		const { requirements } = command
 		command.requirements = [] // reset command.requirements
-		mapCommandRequirement(this, command, requirements)
+		mapCommandRequirement(this, command, requirements) /* eslint no-use-before-define: "off" */
 
 		// Check if command exists already and throw error or add to client
 		if (!command.childOf) {
@@ -375,13 +364,13 @@ class Client extends Eris.Client {
 				logger.commandadderror(`Command exists: ${command.name}`)
 			} else {
 				this.commands.push(command)
-				logger.dev(`Command added: ${command.name}`) 
+				logger.dev(`Command added: ${command.name}`)
 				return command
 			}
 		} else { // Find parent command and add to client
 			const parent = this.commands.find(c => c.names.includes(command.childOf))
-			if (!parent) { 
-				throw new Error(`Parent command ${command.childOf} not found for ${command.name}`) 
+			if (!parent) {
+				throw new Error(`Parent command ${command.childOf} not found for ${command.name}`)
 			} else {
 				if (command.category !== parent.category) { // Set category as parent category if is different
 					command.category = parent.category
@@ -400,7 +389,7 @@ class Client extends Eris.Client {
 	 * @param {string} dirname - The location of the directory.
 	 */
 	addCommandDir(dirname) {
-		this._addFromDirectory(dirname, (filename) => this.addCommandFile(filename))
+		this._addFromDirectory(dirname, filename => this.addCommandFile(filename))
 	}
 
 	/**
@@ -412,8 +401,8 @@ class Client extends Eris.Client {
 		try {
 			const commandLoaded = reload(filename)
 			const command = this.addCommand(commandLoaded)
-			if(command){
-				command. filename = filename
+			if (command) {
+				command.filename = filename
 			}
 			return command
 		} catch (err) {
@@ -445,13 +434,13 @@ class Client extends Eris.Client {
 	 * @returns {Component} - Component added
 	 */
 	addComponent(component, options) {
-		if (!(component instanceof Component) && typeof(component) === 'object') { // allow load components as object
+		if (!(component instanceof Component) && typeof component === 'object') { // allow load components as object
 			const componentObject = component
-			if(!componentObject.name) throw new TypeError(`Component as object require an name => ${JSON.stringify(componentObject)}`)
-			component = class extends Component{
-				constructor(client, options){
+			if (!componentObject.name) throw new TypeError(`Component as object require an name => ${JSON.stringify(componentObject)}`)
+			component = class extends Component {
+				constructor(client, options) {
 					super(client, options)
-					if(typeof(componentObject.constructor) === 'function'){
+					if (typeof componentObject.constructor === 'function'){
 						componentObject.constructor(client, options)
 					}
 				}
@@ -485,7 +474,7 @@ class Client extends Eris.Client {
 		try {
 			const componentClass = reload(filename)
 			const component = this.addComponent(componentClass)
-			if(component){
+			if (component) {
 				component.filename = filename
 			}
 			return component
@@ -499,21 +488,21 @@ class Client extends Eris.Client {
 	 * @param {string} dirname Path to load components
 	 */
 	addComponentDir(dirname) {
-		this._addFromDirectory(dirname, (filename) => this.addComponentFile(filename))
+		this._addFromDirectory(dirname, filename => this.addComponentFile(filename))
 	}
 
 	/**
 	 * Define a requirement that can be added by commands
 	 * @param  {(CommandRequirementObject|CommandRequirementFunction)} requirement - Requirement to define
 	 */
-	addCommandRequirement(requirement){
-		if(typeof(requirement) === 'object' && requirement.type){
+	addCommandRequirement(requirement) {
+		if (typeof requirement === 'object' && requirement.type) {
 			this._commandsRequirements[requirement.type] = requirement
 			return requirement
-		}else if(typeof(requirement) === 'function'){
+		} else if (typeof requirement === 'function') {
 			this._commandsRequirements[requirement.name] = requirement
 			return requirement
-		}else{
+		} else {
 			logger.error('Error adding command requirement')
 		}
 	}
@@ -526,7 +515,7 @@ class Client extends Eris.Client {
 	addCommandRequirementFile(filename) {
 		try {
 			const requirementLoaded = reload(filename)
-			if (typeof(requirementLoaded) === "function") Object.defineProperty(requirementLoaded, 'name', {value: path.basename(filename, '.js')})
+			if (typeof requirementLoaded === 'function') Object.defineProperty(requirementLoaded, 'name', { value: path.basename(filename, '.js') })
 			const requirement = this.addCommandRequirement(requirementLoaded)
 			if (requirement) {
 				requirement.filename = filename
@@ -542,7 +531,7 @@ class Client extends Eris.Client {
 	 * @param {string} dirname Path to load command requirements
 	 */
 	addCommandRequirementDir(dirname) {
-		this._addFromDirectory(dirname, (filename) => this.addCommandRequirementFile(filename))
+		this._addFromDirectory(dirname, filename => this.addCommandRequirementFile(filename))
 	}
 
 	/**
@@ -555,14 +544,14 @@ class Client extends Eris.Client {
 		const commands = this.commands.reduce((filenames, command) => {
 			filenames.push(command.filename ? command.filename : command)
 			if (command.childs.length > 0) {
-				command.childs.forEach(subcommand => {
+				command.childs.forEach((subcommand) => {
 					filenames.push(subcommand.filename ? subcommand.filename : subcommand)
 				})
 			}
 			return filenames
 		}, [])
 		this.commands = []
-		commands.forEach(command => typeof(command) === "string" ? this.addCommandFile(command) : this.addCommand(command))
+		commands.forEach(command => typeof command === 'string' ? this.addCommandFile(command) : this.addCommand(command)) /* eslint no-confusing-arrow: 'off' */
 	}
 
 	/**
@@ -574,28 +563,28 @@ class Client extends Eris.Client {
 		logger.dev('Reloading components...')
 		const components = Object.keys(this.components).map(key => this.components[key]).reduce((filenames, component) => {
 			if (component.filename) {
-			   filenames.push([component.filename, component.name || component.constructor.name])
-		   }
-		   return filenames
-	   	}, [])
-		//this.components = {}
+				filenames.push([component.filename, component.name || component.constructor.name])
+			}
+			return filenames
+		}, [])
+
 		components.forEach(([filename, name]) => {
 			delete this.components[name]
 			this.addComponentFile(filename)
 		})
 		this.handleEvent('ready')()
-   }
+	}
 
-   	reloadCommandRequirements() { 
+	reloadCommandRequirements() {
 		logger.dev('Reloading command requirements...')
-		const filenames = Object.keys(this._commandsRequirements).map(key => this._commandsRequirements[key]).reduce((filenames, requirement) => {
+		const filenamesRequirement = Object.keys(this._commandsRequirements).map(key => this._commandsRequirements[key]).reduce((filenames, requirement) => {
 			if (requirement.filename) {
 				filenames.push(requirement.filename)
 			}
 			return filenames
 		}, [])
 		// this._commandsRequirements = {}
-		filenames.forEach(filename => this.addCommandRequirementFile(filename))
+		filenamesRequirement.forEach(filename => this.addCommandRequirementFile(filename))
 	}
 
 	/**
@@ -636,15 +625,15 @@ class Client extends Eris.Client {
 		// Traditional prefix handling - if there is no prefix, skip this rule
 		const prefix = this.getPrefixForMessage(msg) // TODO: guild config
 		if (prefix !== undefined && msg.content.startsWith(prefix)) {
-			return {prefix, content: msg.content.substr(prefix.length)}
+			return { prefix, content: msg.content.substr(prefix.length) }
 		}
 		// Allow mentions to be used as prefixes according to config
 		const match = msg.content.match(this.mentionPrefixRegExp)
 		if (this.allowMention && match) { // TODO: guild config
-			return {prefix: match[0], content: msg.content.substr(match[0].length)}
+			return { prefix: match[0], content: msg.content.substr(match[0].length) }
 		}
 		// we got nothing
-		return {prefix: undefined, content: msg.content}
+		return { prefix: undefined, content: msg.content }
 	}
 
 	/**
@@ -670,9 +659,8 @@ class Client extends Eris.Client {
 	triggerMessageCreate(msg, client) {
 		return true
 	}
-	
+
 	/**
-	 * 
 	 * @typedef EmbedMessageObject
 	 * @see {@link https://abal.moe/Eris/docs/TextChannel#function-createMessage EmbedMessageObject}
 	 */
@@ -698,11 +686,11 @@ class Client extends Eris.Client {
 	 * @returns {parseCommand} - 
 	 */
 	createCommandArgs(msg) {
-		const {prefix, content} = this.splitPrefixFromContent(msg)
-		if( typeof prefix !== 'string' || typeof content !== 'string') return
+		const { prefix, content } = this.splitPrefixFromContent(msg)
+		if (typeof prefix !== 'string' || typeof content !== 'string') return
 
 		const args = content.split(' ').map(word => word.trim())
-		
+
 		/**
 		 * Message is spit for spaces (' ')
 		 * @typedef args
@@ -728,26 +716,26 @@ class Client extends Eris.Client {
 		return args
 	}
 
-	async checkRequirements(msg, args, client, command){
-		if(!command.enable){ return false}
+	async checkRequirements(msg, args, client, command) {
+		if (!command.enable) { return false }
 		return command.requirements.reduce(async (result, requirement) => {
-			if(!(await result)){ return Promise.resolve(false) }
-			if(typeof(requirement) === 'object'){
-				const pass = await requirement.condition(msg, args, client, command, requirement)
-				if(pass === null){ // ignore response/responseDM/run methods
+			if (!(await result)) { return Promise.resolve(false) }
+			if (typeof requirement === 'object') {
+				const pass = await requirement.validate(msg, args, client, command, requirement)
+				if (pass === null) { // ignore response/responseDM/run methods
 					return Promise.resolve(false)
-				}else if(!pass){ // false/undefined do response/responseDM/run methods
-					if(["string", "object"].includes(typeof(requirement.response))){
+				} else if (!pass) { // false/undefined do response/responseDM/run methods
+					if (["string", "object"].includes(typeof(requirement.response))) {
 						await msg.channel.createMessage(requirement.response) // Response to message
-					}else if(typeof(requirement.response) === "function"){
+					} else if (typeof requirement.response === "function") {
 						const res = await requirement.response(msg, args, client, command, requirement) 
 						await msg.channel.createMessage(res) // Response to message
-					}else if(["string", "object"].includes(typeof(requirement.responseDM))){
+					} else if (["string", "object"].includes(typeof(requirement.responseDM))) {
 						await msg.author.getDMChannel().then(channel => channel.createMessage(requirement.responseDM)) // Response with a dm
-					}else if(typeof(requirement.responseDM) === "function"){
+					} else if (typeof requirement.responseDM === "function") {
 						const res = await requirement.responseDM(msg, args, client, command, requirement) 
 						await msg.author.getDMChannel().then(channel => channel.createMessage(res)) // Response with a dm
-					}else if(typeof(requirement.run) === "function"){
+					} else if (typeof requirement.run === "function") {
 						await requirement.run(msg, args, client, command, requirement) // Custom
 					}
 					return Promise.resolve(false)
@@ -793,30 +781,30 @@ class Client extends Eris.Client {
 }
 
 
-function getCommandRequirement(client, command, req){
-	if(typeof(req) === 'string'){
-		if(builtinCommandRequirements[req]){
+function getCommandRequirement(client, command, req) {
+	if (typeof req === 'string') {
+		if (builtinCommandRequirements[req]) {
 			const requirement = builtinCommandRequirements[req]({command, client})
 			requirement.type = req
 			return requirement
-		}else if(client._commandsRequirements[req]){
-			if(typeof(client._commandsRequirements[req]) === "object"){
+		} else if (client._commandsRequirements[req]) {
+			if (typeof client._commandsRequirements[req] === "object") {
 				return client._commandsRequirements[req]
-			}else if(typeof(client._commandsRequirements[req]) === "function"){
-				return client._commandsRequirements[req]({command, client})
+			}else if(typeof client._commandsRequirements[req]  === "function"){
+				return client._commandsRequirements[req]({ command, client })
 			}
-		}else{
+		} else {
 			throw new Error(`String command requirement not found: ${req}`)
 		}
-	}else if(typeof(req) === 'object'){
-		if(builtinCommandRequirements[req.type]){
-			const requirement = builtinCommandRequirements[req.type]({...req, command, client})
+	} else if (typeof req === 'object') {
+		if (builtinCommandRequirements[req.type]) {
+			const requirement = builtinCommandRequirements[req.type]({ ...req, command, client })
 			requirement.type = req.type
 			return requirement
-		}else{
+		} else {
 			return req
 		}
-	}else{
+	} else {
 		throw new TypeError(`Requirement: ${req} on ${command.name}`)
 	}
 }

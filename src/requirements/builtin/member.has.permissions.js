@@ -1,5 +1,5 @@
 module.exports = ({permissions, response, responseDM, run}) => ({
-    condition: (msg, args, client, command, req) => {
+    validate: (msg, args, client, command, req) => {
         const guild = msg.channel.guild
         if(!guild){ return null }
 		const member = guild.members.get(msg.author.id)
