@@ -60,7 +60,8 @@ class Command {
 		this.requirements = Array.isArray(options.requirements) ? options.requirements : [] // These requirements are mapped in client.addCommand
 		/** @prop {object} - Command Hooks */
 		this.hooks = {
-			pre: [], // Fired before run command
+			prereq: [], // Fired before check reqiurements
+			prerun: [], // Fired before run command
 			executed: [], // Fired after command is run
 			error: [] // Fired when there is an error running pre/executed hooks and response/run methods
 		}

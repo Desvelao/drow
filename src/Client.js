@@ -214,19 +214,28 @@ class Client extends Eris.Client {
 		// 	client: this
 		// }, this.contextExtension)
 		try {
-			if (!command || !args) return
-			const notpass = !(await this.checkRequirements(msg, args, this, command))
-			if (notpass) return
 			/**
-			 * Fired before a command is executed. Don't cant stop command of running
-			 * @event Client#aghanim:command:pre
+			 * Fired before a command is executed. Can't stop command of running
+			 * @event Client#aghanim:command:prereq
 			 * @param {object} msg - Eris Message object
 			 * @param {args} args - Args object
 			 * @param {Client} client - Client instance
 			 * @param {Command} command - Command
 			 */
-			this.emit('aghanim:command:pre', msg, args, this, command)
-			await command.runHook('pre', msg, args, this, command)
+			this.emit('aghanim:command:prereq', msg, args, this, command)
+			await command.runHook('prereq', msg, args, this, command)
+			const notpass = !(await this.checkRequirements(msg, args, this, command))
+			if (notpass) return
+			/**
+			 * Fired before a command is executed. Can't stop command of running
+			 * @event Client#aghanim:command:prerun
+			 * @param {object} msg - Eris Message object
+			 * @param {args} args - Args object
+			 * @param {Client} client - Client instance
+			 * @param {Command} command - Command
+			 */
+			this.emit('aghanim:command:prerun', msg, args, this, command)
+			await command.runHook('prerun', msg, args, this, command)
 			if (command.response) {
 				switch (typeof command.response) {
 				case 'string': {
@@ -242,9 +251,7 @@ class Client extends Eris.Client {
 					await msg.channel.createMessage(command.response)
 					break
 				}
-				default: {
-
-				}
+				default: {}
 				}
 			} else if (command.responseDM) {
 				switch (typeof command.responseDM) {
@@ -261,12 +268,10 @@ class Client extends Eris.Client {
 					await msg.channel.createMessage(command.responseDM)
 					break
 				}
-				default: {
-
-				}
+				default: {}
 				}
 			} else {
-				const value = await command.run(msg, args, this, command)
+				await command.run(msg, args, this, command)
 			}
 			/**
 			 * Fired after a command is executed. Don't cant stop command of running
