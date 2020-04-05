@@ -41,7 +41,7 @@ module.exports = {
 	requirements: [
 		{
 			type: &quot;onlyme&quot; // set a type/name
-			condition: (msg, args, client, command, requirement) => { // function to evaluate. if returns false do first of response/responseDM/run methods
+			validate: (msg, args, client, command, requirement) => { // function to evaluate. if returns false do first of response/responseDM/run methods
 				return msg.author.id === &quot;mydiscordid&quot;
 				// return null to ignore response/responseDM/run methods if some these aren't undefined
 				// you can return a context of this function if you return an array as [passCondition, conditionReqContext]
@@ -69,12 +69,12 @@ module.exports = {
 </code></pre>
 <h3><div id="define-user-requirement">Define user builtin requirements</div></h3>
 <p>Define a custom requirement or set of them to import easily from a command definition</p>
-<pre class="prettyprint source lang-js"><code>client.defineCommandRequirement(requirement) // requirement can be a object or a function
+<pre class="prettyprint source lang-js"><code>client.addCommandRequirement(requirement) // requirement can be a object or a function
 
 // Requiment object
-client.defineCommandRequirement({
+client.addCommandRequirement({
 	type: 'my.requirement', // name to inject in commands if these have it as requirement
-	condition: (msg, args, client, command, requirement) => { // Returns false to run first of response/responseDM/run actions
+	validate: (msg, args, client, command, requirement) => { // Returns false to run first of response/responseDM/run actions
 		return msg.author.id === &quot;mydiscordID&quot;
 		// return null to ignore response/responseDM/run methods if some of these are defined
 		// return [true/false, conditionReqContext] to fail requirement and pass a context to response/responseDM/run actions
@@ -83,11 +83,11 @@ client.defineCommandRequirement({
 })
 
 // Requirement function
-client.defineCommandRequirement(function guildadmin({command, client}){ // function name will be the name to inject in commands
+client.addCommandRequirement(function guildadmin({command, client}){ // function name will be the name to inject in commands
 	// should be return a requirement or array of requirement (useful to pack multiple requirements as one)
 	return {
 		type: 'my.requirement', // name to inject in commands if these have it as requirement
-		condition: (msg, args, client, command, requirement) => { // Returns false to run first of response/responseDM/run actions
+		validate: (msg, args, client, command, requirement) => { // Returns false to run first of response/responseDM/run actions
 			return msg.author.id === &quot;mydiscordID&quot;
 			// return null to ignore response/responseDM/run methods if some of these are defined
 			// return [true/false, conditionReqContext] to fail requirement and pass a context to response/responseDM/run actions
@@ -98,14 +98,14 @@ client.defineCommandRequirement(function guildadmin({command, client}){ // funct
 	return [
 		{
 			type: 'only.for.guild',
-			condition: (msg, args, client, command, requirement) => {
+			validate: (msg, args, client, command, requirement) => {
 				return msg.channel.guild && true // remember return true/false/null/[true/false, context]
 			}
 			response: &quot;Sorry this command is only avaliable in guilds&quot;
 		},
 		{
 			type: 'member.with.role',
-			condition: (msg, args, client, command, requirement) => {
+			validate: (msg, args, client, command, requirement) => {
 				const member = msg.channel.guild.members.get(msg.author.id)
 				if(!member){return false}
 				let { role } = req
@@ -268,7 +268,7 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:executed">aghanim:command:executed</a></li><li><a href="Client.html#event:aghanim:command:pre">aghanim:command:pre</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create a category</a></li><li><a href="tutorial-6command-requirements.html">Command requirements</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-aghanim.html">aghanim</a></li></ul><h3>Classes</h3><ul><li><a href="Category.html">Category</a></li><li><a href="Client.html">Client</a></li><li><a href="Command.html">Command</a></li><li><a href="Component.html">Component</a></li></ul><h3>Events</h3><ul><li><a href="Client.html#event:aghanim:command:error">aghanim:command:error</a></li><li><a href="Client.html#event:aghanim:command:executed">aghanim:command:executed</a></li><li><a href="Client.html#event:aghanim:command:prereq">aghanim:command:prereq</a></li><li><a href="Client.html#event:aghanim:command:prerun">aghanim:command:prerun</a></li><li><a href="Client.html#event:aghanim:component:error">aghanim:component:error</a></li><li><a href="Client.html#event:aghanim:error">aghanim:error</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-1getting-started.html">Getting Started</a></li><li><a href="tutorial-2create-bot.html">Create a bot</a></li><li><a href="tutorial-3command.html">Create Commands/Subcommands</a></li><li><a href="tutorial-4components.html">Create Components</a></li><li><a href="tutorial-5categories.html">Create a category</a></li><li><a href="tutorial-6command-requirements.html">Command requirements</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Logger">Logger</a></li></ul>
 </nav>
 
 <br class="clear">
