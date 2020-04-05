@@ -11,10 +11,11 @@ module.exports = new Command('ping', // command name
 		args : '',
 		requirements: [], // Define requirements for this command. See command requirements tutorial
 		hooks : { // Add hooks to commnand
-			pre : [], // Array of hooks fired before command execution. function(msg, args, client, command)
+			prereq : [], // Array of hooks fired before command requirement execution. function(msg, args, client, command)
+			prerun : [], // Array of hooks fired before command execution. function(msg, args, client, command)
 			executed : [], // Array of hooks fired after command execution. function(msg, args, client, command)
 			error: [] // Array of hooks fired if the command has some error. function(msg, args, client, command, error)
-		}
+		},
 		response: "Pong!", // String or function(msg, args, client, commnad) that returns a string or EmbedMessageObject
 		responseDM: "Pong by DM!", // String or function(msg, args, client, commnad) that returns a string or EmbedMessageObject
 	},
@@ -70,10 +71,11 @@ module.exports = {
 	args: '',
 	requirements: [],
 	hooks : {
-		pre : [],
+		prereq : [],
+		prerun : [],
 		executed : [],
 		error: []
-	}
+	},
 	response: "Pong!",
 	responseDM: "Pong by DM!",
 	run: async (msg, args, client, command){

@@ -52,14 +52,13 @@ module.exports = {
 	name: 'ping',
 	constructor: (client, options) => {
 		// do something when create component instance
-	}
+	},
 	ready: () => {
 		console.log('My component is ready')
-	}
-	help: 'Get Pong!',
+	},
 	messageCreate(msg, args, client, command){
 		console.log(`Message: ${msg.content}`)
-	}
+	},
 	messageReactionAdd(msg, emoji, userID, client){
 		// do something when a reactions is added to one message
 	}
